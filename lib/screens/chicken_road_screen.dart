@@ -98,6 +98,20 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     game.startGame();
   }
 
+  void _moveChickenForward() {
+    game.moveChickenForward();
+  }
+
+  void _handleMainButton() {
+    if (game.isGameActive) {
+      // Game is active, move chicken forward
+      _moveChickenForward();
+    } else {
+      // Game is not active, start the game
+      _startGame();
+    }
+  }
+
   void _moveChickenUp() {
     game.moveChickenUp();
   }
@@ -424,7 +438,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
               Expanded(
                 child: CupertinoButton(
                   color: greenButton,
-                  onPressed: _startGame,
+                  onPressed: _handleMainButton,
                   child: Text(
                     game.isGameActive
                         ? 'GO'
@@ -525,8 +539,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
           game.chickenHorizontalPos * screenWidth -
           25, // Horizontal movement (left to right)
       top:
-          game.chickenLane * screenHeight -
-          25, // Vertical lane position (up/down between lanes)
+          0.5 * screenHeight - 25, // Same positioning as manholes (center line)
       child: SizedBox(
         width: 50,
         height: 50,
@@ -590,12 +603,21 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     final screenHeight = MediaQuery.of(context).size.height * 0.6;
 
     return game.manholes.map((manhole) {
-      // Manholes are static on the road lanes
+      // Manholes are positioned horizontally at centers between lane dividers
+      // Lane centers: 0.3, 0.5, 0.7, 0.9 (between dashed lines, excluding first lane)
+      List<double> laneCenters = [0.3, 0.5, 0.7, 0.9];
+      int manholeIndex = game.manholes.indexOf(manhole);
+
+      // Get horizontal position for this manhole (center between lane dividers)
+      double horizontalLanePos = laneCenters[manholeIndex % laneCenters.length];
+
       return Positioned(
-        left: manhole.lane * screenWidth - 20, // Static lane position
+        left:
+            horizontalLanePos * screenWidth -
+            20, // Center between lane dividers
         top:
-            manhole.verticalPosition * screenHeight -
-            20, // Static vertical position on lane
+            0.5 * screenHeight -
+            20, // All manholes on same horizontal line (center)
         child: AnimatedBuilder(
           animation: _obstaclesAnimationController,
           builder: (context, child) {

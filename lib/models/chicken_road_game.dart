@@ -130,6 +130,12 @@ class ChickenRoadGame {
   double chickenHorizontalPos =
       0.1; // Horizontal position on screen (0.0 to 1.0)
 
+  // Manhole movement restrictions
+  int currentManholeStep = 0; // Current step (0-4)
+  static const int maxManholeSteps = 4; // Maximum steps per line
+  List<double> currentLineManholePositions =
+      []; // X positions of manholes on current line
+
   // Game scrolling
   double backgroundOffset = 0.0;
   double gameSpeed = 1.0;
@@ -231,24 +237,12 @@ class ChickenRoadGame {
     floatingTexts.clear();
     manholes.clear(); // Clear manholes
 
-    // Generate initial manholes on all 4 lanes (excluding first lane)
-    for (int row = 0; row < 5; row++) {
-      // Create 4 manholes in the center of each lane between the dashed lines
-      // All manholes on the same horizontal line (same height as chicken)
-      for (int lane = 1; lane < 5; lane++) {
-        // Skip first lane (lane 0)
-        final lanePosition = (lane * 0.2) + 0.1; // Centers: 0.3, 0.5, 0.7, 0.9
-        manholes.add(
-          Manhole(
-            lane: lanePosition,
-            worldX:
-                chickenWorldX + 2.0 + (row * 2.0), // Spaced every 2 units ahead
-            verticalPosition:
-                chickenLane, // All manholes at the same height as chicken
-          ),
-        );
-      }
-    }
+    // Reset manhole movement tracking
+    currentManholeStep = 0;
+    currentLineManholePositions.clear();
+
+    // Generate initial manholes for the current line
+    _generateInitialManholes();
 
     score = 0;
     coinsCounted = 0;
@@ -258,7 +252,12 @@ class ChickenRoadGame {
     _notifyStateChanged();
   }
 
-  // Start the game
+  // Constructor - generate manholes on creation
+  ChickenRoadGame() {
+    _generateInitialManholes();
+  }
+
+  // Start the game (only starts obstacles/cars, not chicken movement)
   bool startGame() {
     if (isGameOver) {
       resetGame();
@@ -270,7 +269,7 @@ class ChickenRoadGame {
         isGameActive = true;
         balance -= selectedBet;
         cashOutAmount = selectedBet.toDouble();
-        _startGameLoop();
+        _startGameLoop(); // This will start cars moving
         _notifyStateChanged();
         return true;
       } else {
@@ -278,22 +277,38 @@ class ChickenRoadGame {
         onShowMessage?.call("Insufficient funds!");
         return false;
       }
-    } else {
-      // Move chicken forward manually when already active
-      moveChickenForward();
-      return true;
     }
+    return true;
   }
 
-  // Move chicken forward (rightward)
+  // Move chicken forward (call this on "Go" button press)
   void moveChickenForward() {
-    if (isGameActive && !isPaused) {
-      chickenHorizontalPos += 0.15; // Move chicken to the right
+    if (!isGameActive || isPaused) return;
+
+    // Check if chicken can make another step
+    if (currentManholeStep >= maxManholeSteps) {
+      // All steps used, cannot move further
+      return;
+    }
+
+    // Find the next manhole to move to
+    if (currentManholeStep < currentLineManholePositions.length) {
+      final targetWorldX = currentLineManholePositions[currentManholeStep];
+
+      // Move chicken to center lane where all manholes are located
+      chickenLane = 0.5; // All manholes are on center lane
+
+      // Move chicken to the next manhole position
+      chickenWorldX = targetWorldX;
+      chickenHorizontalPos =
+          0.1 + (currentManholeStep + 1) * 0.2; // Move right on screen
+      currentManholeStep++;
+
+      // Clamp horizontal position
       if (chickenHorizontalPos > 0.9) {
-        chickenHorizontalPos = 0.9; // Don't go off screen
+        chickenHorizontalPos = 0.9;
       }
-      chickenWorldX +=
-          0.2; // Also update world position for multiplier calculation
+
       _notifyStateChanged();
     }
   }
@@ -304,7 +319,12 @@ class ChickenRoadGame {
       chickenLane -=
           0.25; // Move to upper lane (5 lanes: 0, 0.25, 0.5, 0.75, 1.0)
       if (chickenLane < 0.0) chickenLane = 0.0;
-      _generateManholesForNewLane(); // Generate manholes for new lane
+
+      // Reset step counter and generate new manhole line
+      currentManholeStep = 0;
+      chickenHorizontalPos = 0.1; // Reset to starting position
+      _generateNewManholeLineForCurrentLane();
+
       _notifyStateChanged();
     }
   }
@@ -315,7 +335,12 @@ class ChickenRoadGame {
       chickenLane +=
           0.25; // Move to lower lane (5 lanes: 0, 0.25, 0.5, 0.75, 1.0)
       if (chickenLane > 1.0) chickenLane = 1.0;
-      _generateManholesForNewLane(); // Generate manholes for new lane
+
+      // Reset step counter and generate new manhole line
+      currentManholeStep = 0;
+      chickenHorizontalPos = 0.1; // Reset to starting position
+      _generateNewManholeLineForCurrentLane();
+
       _notifyStateChanged();
     }
   }
@@ -366,8 +391,7 @@ class ChickenRoadGame {
         return;
       }
 
-      // Move the chicken forward in the world
-      chickenWorldX += 0.02 * gameSpeed;
+      // Don't move chicken automatically - only move on manual input
       // Move the road/background for visual effect
       backgroundOffset += 0.02 * gameSpeed;
       // Update multiplier based on distance traveled
@@ -426,88 +450,56 @@ class ChickenRoadGame {
       );
     }
 
-    // Generate static manholes on the road ahead of chicken
-    // Place 4 manholes on the same horizontal line
-    final manholeSpacing = 2.0; // Distance between manhole rows
-    final lookAheadDistance = 10.0; // How far ahead to place manholes
+    // No need to generate manholes here - they are generated when chicken changes lanes
+    // or at game start through _generateInitialManholes() and _generateNewManholeLineForCurrentLane()
+  }
 
-    // Calculate the farthest manhole position
-    final farthestManholeX = manholes.isNotEmpty
-        ? manholes.map((m) => m.worldX).reduce((a, b) => a > b ? a : b)
-        : 0.0;
+  // Generate initial manholes for the current lane
+  void _generateInitialManholes() {
+    currentLineManholePositions.clear();
+    manholes.clear();
 
-    // Generate new manholes if needed
-    if (farthestManholeX < chickenWorldX + lookAheadDistance) {
-      final startX = farthestManholeX == 0
-          ? chickenWorldX + 4.0
-          : farthestManholeX + manholeSpacing;
+    // Create 4 manholes in a horizontal line, all at the center lane (0.5)
+    // but at different horizontal positions representing 4 lanes between dashed lines
+    // Lane centers between dashed lines: 0.3, 0.5, 0.7, 0.9 (excluding first lane)
 
-      // Create 4 manholes on the same horizontal line at regular intervals
-      for (
-        double x = startX;
-        x < chickenWorldX + lookAheadDistance;
-        x += manholeSpacing
-      ) {
-        // Place 4 manholes in the center of each lane between dashed lines
-        // All at the same height as the chicken
-        for (int lane = 1; lane < 5; lane++) {
-          // Skip first lane (lane 0)
-          final lanePosition =
-              (lane * 0.2) + 0.1; // Centers: 0.3, 0.5, 0.7, 0.9
-          manholes.add(
-            Manhole(
-              lane: lanePosition,
-              worldX: x,
-              verticalPosition:
-                  chickenLane, // All manholes at the same height as chicken
-            ),
-          );
-        }
-      }
+    for (int i = 0; i < maxManholeSteps; i++) {
+      final worldX =
+          chickenWorldX + 2.0 + (i * 1.5); // Space manholes 1.5 units apart
+      currentLineManholePositions.add(worldX);
+
+      manholes.add(
+        Manhole(
+          lane: 0.5, // All manholes on the same horizontal line (center)
+          worldX: worldX,
+          verticalPosition: 0.5, // All on same vertical position
+        ),
+      );
     }
   }
 
-  // Generate manholes for all lanes when chicken changes lanes
-  void _generateManholesForNewLane() {
-    // Don't generate new manholes if there are already many ahead
-    final existingAheadCount = manholes.where(
-      (manhole) => manhole.worldX > chickenWorldX,
-    ).length;
-    
-    if (existingAheadCount >= 20) return; // Limit manholes ahead
-    
-    // Remove old manholes that are too far behind and not activated
-    manholes.removeWhere(
-      (manhole) => manhole.worldX < chickenWorldX - 2.0 && !manhole.isActivated,
-    );
+  // Generate new manhole line for current lane
+  void _generateNewManholeLineForCurrentLane() {
+    currentLineManholePositions.clear();
 
-    // Generate new manholes in the center of each lane
-    // All at the same height as the chicken
-    final startWorldX = chickenWorldX + 4.0;
-    
-    for (int i = 1; i <= 3; i++) {
-      // Place 4 manholes in the center of each lane between dashed lines
-      for (int lane = 1; lane < 5; lane++) {
-        // Skip first lane (lane 0)
-        final lanePosition = (lane * 0.2) + 0.1; // Centers: 0.3, 0.5, 0.7, 0.9
-        final worldX = startWorldX + (i * 2.0);
-        
-        // Check if manhole already exists at this position
-        final existsAtPosition = manholes.any((manhole) => 
-          (manhole.worldX - worldX).abs() < 0.5 && 
-          (manhole.lane - lanePosition).abs() < 0.1
-        );
-        
-        if (!existsAtPosition) {
-          manholes.add(
-            Manhole(
-              lane: lanePosition,
-              worldX: worldX,
-              verticalPosition: chickenLane, // All manholes at the same height as chicken
-            ),
-          );
-        }
-      }
+    // Remove old manholes that are not activated
+    manholes.removeWhere((manhole) => !manhole.isActivated);
+
+    // Create 4 new manholes in a horizontal line, all at the center lane (0.5)
+    // but at different horizontal positions representing 4 lanes between dashed lines
+
+    for (int i = 0; i < maxManholeSteps; i++) {
+      final worldX =
+          chickenWorldX + 2.0 + (i * 1.5); // Space manholes 1.5 units apart
+      currentLineManholePositions.add(worldX);
+
+      manholes.add(
+        Manhole(
+          lane: 0.5, // All manholes on the same horizontal line (center)
+          worldX: worldX,
+          verticalPosition: 0.5, // All on same vertical position
+        ),
+      );
     }
   }
 
@@ -572,12 +564,13 @@ class ChickenRoadGame {
       }
     }
 
-    // Check for manhole interactions - chicken can activate any nearby manhole
+    // Check for manhole interactions - chicken can only activate manholes it steps directly on
     for (int i = manholes.length - 1; i >= 0; i--) {
       final manhole = manholes[i];
       if (!manhole.isActivated &&
-          (manhole.lane - chickenLane).abs() < 0.3 && // Within reach of chicken
-          (manhole.worldX - chickenWorldX).abs() < 0.3) {
+          (manhole.lane - chickenLane).abs() < 0.1 && // Same lane as chicken
+          (manhole.worldX - chickenWorldX).abs() < 0.2) {
+        // Chicken is at manhole position
         // Activate manhole transformation
         manhole.startTransformation();
 
