@@ -193,22 +193,11 @@ class ChickenRoadGame {
       'multiplierRate': 0.12,
       'lives': 1,
     },
-    'Hardcore': {
-      'obstacleFrequency': 1.5,
-      'gameSpeed': 1.5,
-      'multiplierRate': 0.18,
-      'lives': 1,
-    },
   };
 
   // Game data
   static const List<int> betOptions = [1, 2, 5];
-  static const List<String> difficulties = [
-    'Easy',
-    'Medium',
-    'Hard',
-    'Hardcore',
-  ];
+  static const List<String> difficulties = ['Easy', 'Medium', 'Hard'];
 
   // Multiplier progression (levels of achievement)
   static const List<double> multiplierLevels = [
@@ -289,7 +278,8 @@ class ChickenRoadGame {
       if (balance >= selectedBet) {
         isGameActive = true;
         balance -= selectedBet;
-        cashOutAmount = selectedBet.toDouble();
+        cashOutAmount =
+            0.0; // Start with 0, will be updated when stepping on manholes
         _startGameLoop(); // This will start cars moving
         _notifyStateChanged();
         return true;
@@ -342,23 +332,22 @@ class ChickenRoadGame {
             ),
           );
 
-          // Add gold based on manhole's multiplier
+          // Add gold based on manhole's multiplier and selected bet
           if (currentMultiplier == 0.0) {
-            // First manhole: set multiplier to 1.0
-            currentMultiplier = 1.0;
+            // First manhole: set multiplier to bet amount
+            currentMultiplier = selectedBet.toDouble();
           } else {
-            // Subsequent manholes: add the manhole's multiplier to current multiplier
-            currentMultiplier += manhole.multiplier;
+            // Subsequent manholes: add the manhole's multiplier * bet to current multiplier
+            currentMultiplier += manhole.multiplier * selectedBet;
           }
-          cashOutAmount =
-              currentMultiplier; // Direct gold amount, not multiplied by bet
+          cashOutAmount = currentMultiplier; // Direct gold amount based on bet
           score += 5; // Fixed score boost
 
           // Add floating text for gold boost
           floatingTexts.add(
             FloatingText(
               text:
-                  '+${currentMultiplier == 1.0 ? '1.0' : manhole.multiplier.toStringAsFixed(1)} Gold',
+                  '+${currentMultiplier == selectedBet.toDouble() ? selectedBet.toStringAsFixed(1) : (manhole.multiplier * selectedBet).toStringAsFixed(1)} Gold',
               position: chickenWorldX,
               lane: chickenLane,
             ),
@@ -423,6 +412,9 @@ class ChickenRoadGame {
       balance += cashOutAmount;
       showCashOutAnimation = true;
       isGameActive = false;
+      isGameOver = true; // End the game completely
+      currentMultiplier = 0.0; // Reset current multiplier
+      cashOutAmount = 0.0; // Reset cash out amount
       _gameTimer?.cancel();
       _notifyStateChanged();
 
@@ -438,15 +430,21 @@ class ChickenRoadGame {
   void updateBet(int newBet) {
     selectedBet = newBet;
     if (!isGameActive) {
-      cashOutAmount = selectedBet.toDouble();
+      // When not playing, cash out amount should be 0, not the bet amount
+      cashOutAmount = 0.0;
     }
     _notifyStateChanged();
   }
 
   // Update difficulty selection
   void updateDifficulty(String newDifficulty) {
-    selectedDifficulty = newDifficulty;
-    _notifyStateChanged();
+    if (!isGameActive) {
+      // Only allow changes when game is not active
+      selectedDifficulty = newDifficulty;
+      gameSpeed = difficultySettings[selectedDifficulty]!['gameSpeed'];
+      chickenLives = difficultySettings[selectedDifficulty]!['lives'];
+      _notifyStateChanged();
+    }
   }
 
   // Pause/unpause game
@@ -576,8 +574,12 @@ class ChickenRoadGame {
   // Update positions of all game objects
   void _updateGameObjects() {
     // Update cars (obstacles) - move them down vertically
+    // Speed depends on difficulty setting
+    final carSpeed =
+        difficultySettings[selectedDifficulty]!['gameSpeed'] * 0.03;
     for (int i = obstacles.length - 1; i >= 0; i--) {
-      obstacles[i].verticalPosition += 0.03 * gameSpeed; // Move down
+      obstacles[i].verticalPosition +=
+          carSpeed; // Move down with difficulty-based speed
 
       // Remove cars that have passed the bottom
       if (obstacles[i].verticalPosition > 1.2) {

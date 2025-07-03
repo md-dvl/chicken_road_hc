@@ -46,15 +46,18 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     20.0,
   ];
 
-  // Game color palette
-  static const Color darkBackground = Color(0xFF2D2D2D);
-  static const Color roadGrey = Color(0xFF4A4A4A);
-  static const Color goldColor = Color(0xFFF1C40F);
-  static const Color greenButton = Color(0xFF27AE60);
-  static const Color redColor = Color(0xFFE74C3C);
-  static const Color greyMultiplier = Color(0xFF7F8C8D);
+  // Game color palette - bright and contrasting
+  static const Color darkBackground = Color(0xFF1A1A2E);
+  static const Color roadGrey = Color(0xFF16213E);
+  static const Color goldColor = Color(0xFFFFD700);
+  static const Color greenButton = Color(0xFF00FF87);
+  static const Color redColor = Color(0xFFFF4757);
+  static const Color greyMultiplier = Color(0xFF0F3460);
   static const Color whiteText = Color(0xFFFFFFFF);
-  static const Color panelGrey = Color(0xFF3A3A3A);
+  static const Color panelGrey = Color(0xFF0F3460);
+  static const Color accentBlue = Color(0xFF2ECC71);
+  static const Color accentPurple = Color(0xFF9B59B6);
+  static const Color accentOrange = Color(0xFFFF6B35);
 
   @override
   void initState() {
@@ -168,9 +171,9 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: darkBackground,
-      child: SafeArea(
+      body: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
@@ -186,103 +189,155 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'CHICKEN ROAD',
-            style: TextStyle(
-              color: whiteText,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: panelGrey,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      CupertinoIcons.money_dollar,
-                      color: goldColor,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${game.balance.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        color: whiteText,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(CupertinoIcons.person_circle, color: whiteText),
-            ],
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [darkBackground, panelGrey],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: goldColor.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
           ),
         ],
+      ),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [goldColor, accentOrange],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: goldColor.withOpacity(0.3),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: const Text(
+            'CHICKEN ROAD ULTIMATE',
+            style: TextStyle(
+              color: darkBackground,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildGameInfoBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [panelGrey.withOpacity(0.8), greyMultiplier.withOpacity(0.8)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: goldColor.withOpacity(0.3), width: 1),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Score and lives
+          // Score, Balance and lives
           Row(
             children: [
-              const Icon(CupertinoIcons.star_fill, color: goldColor, size: 16),
-              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: goldColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: goldColor.withOpacity(0.3),
+                      blurRadius: 4,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  CupertinoIcons.star_fill,
+                  color: darkBackground,
+                  size: 12,
+                ),
+              ),
+              const SizedBox(width: 8),
               Text(
                 'Score: ${game.score}',
-                style: const TextStyle(color: whiteText, fontSize: 14),
+                style: const TextStyle(
+                  color: goldColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
+              // Balance display
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: goldColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  CupertinoIcons.money_dollar,
+                  color: darkBackground,
+                  size: 12,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${game.balance.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: goldColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 16),
               Row(
                 children: List.generate(
                   3,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(right: 4),
+                  (index) => Container(
+                    margin: const EdgeInsets.only(right: 4),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: index < game.chickenLives
+                          ? redColor
+                          : Colors.grey.withOpacity(0.3),
+                      shape: BoxShape.circle,
+                      boxShadow: index < game.chickenLives
+                          ? [
+                              BoxShadow(
+                                color: redColor.withOpacity(0.3),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ]
+                          : [],
+                    ),
                     child: Icon(
                       CupertinoIcons.heart_fill,
-                      color: index < game.chickenLives ? redColor : Colors.grey,
-                      size: 16,
+                      color: index < game.chickenLives
+                          ? whiteText
+                          : Colors.grey,
+                      size: 12,
                     ),
                   ),
                 ),
               ),
             ],
-          ),
-
-          // Current multiplier
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: greyMultiplier,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '\$${game.currentMultiplier.toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: whiteText,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
           ),
 
           // Game status
@@ -348,8 +403,20 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
   Widget _buildRoadBackground() {
     return Container(
       decoration: BoxDecoration(
-        color: roadGrey,
+        gradient: LinearGradient(
+          colors: [roadGrey, panelGrey, roadGrey],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: goldColor.withOpacity(0.3), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: accentBlue.withOpacity(0.1),
+            blurRadius: 15,
+            spreadRadius: 3,
+          ),
+        ],
       ),
     );
   }
@@ -364,7 +431,23 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
   Widget _buildControlPanel() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: panelGrey,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [panelGrey, darkBackground],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        border: Border(
+          top: BorderSide(color: goldColor.withOpacity(0.3), width: 2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: goldColor.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -388,15 +471,40 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: game.selectedBet == bet
-                                  ? goldColor
-                                  : greyMultiplier,
+                              gradient: game.selectedBet == bet
+                                  ? LinearGradient(
+                                      colors: [goldColor, accentOrange],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : LinearGradient(
+                                      colors: [greyMultiplier, panelGrey],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: game.selectedBet == bet
+                                    ? goldColor
+                                    : greyMultiplier.withOpacity(0.5),
+                                width: 1,
+                              ),
+                              boxShadow: game.selectedBet == bet
+                                  ? [
+                                      BoxShadow(
+                                        color: goldColor.withOpacity(0.3),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
+                                      ),
+                                    ]
+                                  : [],
                             ),
                             child: Text(
                               '\$$bet',
-                              style: const TextStyle(
-                                color: whiteText,
+                              style: TextStyle(
+                                color: game.selectedBet == bet
+                                    ? darkBackground
+                                    : whiteText,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -408,38 +516,88 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
               ),
               // Difficulty selector
               Flexible(
-                child: Material(
-                  color: Colors.transparent,
-                  child: Localizations(
-                    locale: const Locale('en', 'US'),
-                    delegates: const [
-                      DefaultMaterialLocalizations.delegate,
-                      DefaultWidgetsLocalizations.delegate,
-                    ],
-                    child: DropdownButton<String>(
-                      value: game.selectedDifficulty,
-                      dropdownColor: panelGrey,
-                      style: const TextStyle(color: whiteText),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            game.selectedDifficulty = newValue;
-                          });
-                        }
-                      },
-                      items: ChickenRoadGame.difficulties
-                          .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Difficulty:',
+                      style: TextStyle(
+                        color: whiteText,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 4.0,
+                      runSpacing: 4.0,
+                      children: ChickenRoadGame.difficulties
+                          .map(
+                            (difficulty) => Opacity(
+                              opacity: game.isGameActive
+                                  ? 0.5
+                                  : 1.0, // Dim when game is active
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (!game.isGameActive) {
+                                    game.updateDifficulty(difficulty);
+                                    setState(() {}); // Refresh UI
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient:
+                                        game.selectedDifficulty == difficulty
+                                        ? LinearGradient(
+                                            colors: [accentPurple, accentBlue],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          )
+                                        : LinearGradient(
+                                            colors: [greyMultiplier, panelGrey],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color:
+                                          game.selectedDifficulty == difficulty
+                                          ? accentPurple
+                                          : greyMultiplier.withOpacity(0.5),
+                                      width: 1,
+                                    ),
+                                    boxShadow:
+                                        game.selectedDifficulty == difficulty
+                                        ? [
+                                            BoxShadow(
+                                              color: accentPurple.withOpacity(
+                                                0.3,
+                                              ),
+                                              blurRadius: 4,
+                                              spreadRadius: 1,
+                                            ),
+                                          ]
+                                        : [],
+                                  ),
+                                  child: Text(
+                                    difficulty,
+                                    style: TextStyle(
+                                      color: whiteText,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            );
-                          })
+                            ),
+                          )
                           .toList(),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],
@@ -449,59 +607,114 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
           Row(
             children: [
               Expanded(
-                child: CupertinoButton(
-                  color: greenButton,
-                  onPressed: _handleMainButton,
-                  child: Text(
-                    game.isGameActive
-                        ? 'GO'
-                        : (game.isGameOver ? 'RESTART' : 'START'),
-                    style: const TextStyle(
-                      color: whiteText,
-                      fontWeight: FontWeight.bold,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [greenButton, accentBlue],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: greenButton.withOpacity(0.4),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: CupertinoButton(
+                    color: Colors.transparent,
+                    onPressed: _handleMainButton,
+                    child: Text(
+                      game.isGameActive
+                          ? 'GO'
+                          : (game.isGameOver ? 'RESTART' : 'START'),
+                      style: const TextStyle(
+                        color: whiteText,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        letterSpacing: 1.0,
+                      ),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: CupertinoButton(
-                  color: goldColor,
-                  onPressed: game.isGameActive ? _cashOut : null,
-                  child: Text(
-                    'CASH OUT\n\$${game.cashOutAmount.toStringAsFixed(2)}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [goldColor, accentOrange],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: goldColor.withOpacity(0.4),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: CupertinoButton(
+                    color: Colors.transparent,
+                    onPressed: game.isGameActive ? _cashOut : null,
+                    child: Text(
+                      'CASH OUT\n\$${game.cashOutAmount.toStringAsFixed(2)}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: darkBackground,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           // How to play button
           Center(
-            child: CupertinoButton(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(
-                    CupertinoIcons.question_circle,
-                    color: whiteText,
-                    size: 16,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'How to play?',
-                    style: TextStyle(color: whiteText, fontSize: 14),
-                  ),
-                ],
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [accentPurple.withOpacity(0.7), panelGrey],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: accentPurple.withOpacity(0.5),
+                  width: 1,
+                ),
               ),
-              onPressed: () => _showHowToPlay(),
+              child: CupertinoButton(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                color: Colors.transparent,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(
+                      CupertinoIcons.question_circle,
+                      color: whiteText,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'How to play?',
+                      style: TextStyle(color: whiteText, fontSize: 14),
+                    ),
+                  ],
+                ),
+                onPressed: () => _showHowToPlay(),
+              ),
             ),
           ),
         ],

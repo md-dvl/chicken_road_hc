@@ -11,13 +11,13 @@ class ChickenRoadApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoApp(
+    return CupertinoApp(
       title: 'Chicken Road Ultimate',
-      theme: CupertinoThemeData(
-        primaryColor: CupertinoColors.systemYellow,
-        brightness: Brightness.light,
+      theme: const CupertinoThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: Color(0xFF1A1A2E),
       ),
-      home: ChickenRoadScreen(),
+      home: const ChickenRoadScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
