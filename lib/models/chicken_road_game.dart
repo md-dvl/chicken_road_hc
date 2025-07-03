@@ -122,7 +122,7 @@ class ChickenRoadGame {
   bool isGameActive = false;
   bool isGameOver = false;
   bool isPaused = false;
-  double currentMultiplier = 1.0;
+  double currentMultiplier = 0.0; // Start with 0 gold
   int selectedBet = 2;
   String selectedDifficulty = 'Medium';
   double cashOutAmount = 0.0;
@@ -238,8 +238,8 @@ class ChickenRoadGame {
     chickenWorldX = 0.0;
     chickenHorizontalPos = 0.1; // Start at left side
     backgroundOffset = 0.0;
-    currentMultiplier = 1.0;
-    cashOutAmount = selectedBet.toDouble();
+    currentMultiplier = 0.0; // Start with 0 instead of 1.0
+    cashOutAmount = 0.0; // Start with 0 gold
     gameSpeed = difficultySettings[selectedDifficulty]!['gameSpeed'];
     chickenLives = difficultySettings[selectedDifficulty]!['lives'];
     obstacles.clear();
@@ -333,15 +333,22 @@ class ChickenRoadGame {
           );
 
           // Add gold based on manhole's multiplier
-          final goldBoost = manhole.multiplier; // Use manhole's multiplier
-          currentMultiplier += goldBoost;
-          cashOutAmount = selectedBet * currentMultiplier;
+          if (currentMultiplier == 0.0) {
+            // First manhole: set multiplier to 1.0
+            currentMultiplier = 1.0;
+          } else {
+            // Subsequent manholes: add the manhole's multiplier to current multiplier
+            currentMultiplier += manhole.multiplier;
+          }
+          cashOutAmount =
+              currentMultiplier; // Direct gold amount, not multiplied by bet
           score += 5; // Fixed score boost
 
           // Add floating text for gold boost
           floatingTexts.add(
             FloatingText(
-              text: '+${goldBoost.toStringAsFixed(1)} Gold',
+              text:
+                  '+${currentMultiplier == 1.0 ? '1.0' : manhole.multiplier.toStringAsFixed(1)} Gold',
               position: chickenWorldX,
               lane: chickenLane,
             ),
@@ -457,8 +464,8 @@ class ChickenRoadGame {
   // Update multiplier progression
   void _updateMultiplier() {
     // No automatic multiplier increase - only manual through manhole activation
-    // Update cash out amount based on current multiplier
-    cashOutAmount = selectedBet * currentMultiplier;
+    // Update cash out amount based on current multiplier (direct gold amount)
+    cashOutAmount = currentMultiplier;
   }
 
   // Generate game objects (obstacles, coins, multipliers)

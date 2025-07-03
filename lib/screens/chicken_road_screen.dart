@@ -14,9 +14,13 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
   // Animation controllers
   late AnimationController _obstaclesAnimationController;
   late AnimationController _chickenAnimationController;
+  late AnimationController _multiplierContainerAnimationController;
 
   // Game model - single source of truth for all game state and logic
   late ChickenRoadGame game;
+
+  // UI state for multiplier display
+  bool showMultiplierContainer = false; // Start hidden since multiplier is 0
 
   // Multiplier progression (levels of achievement)
   List<double> multiplierLevels = [
@@ -84,22 +88,49 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     )..repeat();
+
+    _multiplierContainerAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
   }
 
   @override
   void dispose() {
     _obstaclesAnimationController.dispose();
     _chickenAnimationController.dispose();
+    _multiplierContainerAnimationController.dispose();
     game.dispose();
     super.dispose();
   }
 
   void _startGame() {
     game.startGame();
+    // Hide multiplier container when starting (since currentMultiplier is 0)
+    setState(() {
+      showMultiplierContainer = false;
+    });
+    _multiplierContainerAnimationController.reverse();
   }
 
   void _moveChickenForward() {
+    // Hide multiplier container during movement
+    _multiplierContainerAnimationController.reverse();
+    setState(() {
+      showMultiplierContainer = false;
+    });
+
     game.moveChickenForward();
+
+    // Show multiplier container again after movement with animation (only if multiplier > 0)
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted && game.currentMultiplier > 0) {
+        setState(() {
+          showMultiplierContainer = true;
+        });
+        _multiplierContainerAnimationController.forward();
+      }
+    });
   }
 
   void _handleMainButton() {
@@ -293,6 +324,8 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             ..._buildBarriers(),
             ..._buildObstacles(),
             _buildChicken(),
+            if (showMultiplierContainer && game.currentMultiplier > 0)
+              _buildChickenMultiplierContainer(),
             ..._buildFloatingTexts(),
             if (game.showCollisionAnimation) _buildCollisionEffect(),
             if (game.showCashOutAnimation) _buildCashOutEffect(),
@@ -530,6 +563,60 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     );
   }
 
+  Widget _buildChickenMultiplierContainer() {
+    final screenWidth = MediaQuery.of(context).size.width - 40;
+    final screenHeight = MediaQuery.of(context).size.height * 0.6;
+
+    return Positioned(
+      left:
+          game.chickenHorizontalPos * screenWidth -
+          35, // Center under chicken (wider container)
+      top: 0.5 * screenHeight + 35, // 35 pixels below chicken center
+      child: AnimatedBuilder(
+        animation: _multiplierContainerAnimationController,
+        builder: (context, child) {
+          // Create bounce effect using elastic ease
+          final bounceValue = Curves.elasticOut.transform(
+            _multiplierContainerAnimationController.value,
+          );
+
+          return Transform.scale(
+            scale: bounceValue,
+            child: AnimatedOpacity(
+              opacity: showMultiplierContainer ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                width: 70,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: goldColor, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: goldColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  '${game.currentMultiplier.toStringAsFixed(1)}', // Show as gold amount, not multiplier
+                  style: const TextStyle(
+                    color: goldColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildCollisionEffect() {
     return Center(
       child: Container(
@@ -601,7 +688,79 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
           child: Container(
             width: 40,
             height: 40,
-            child: manhole.isTransformedToCoin
+            child: manhole.isTransforming
+                ? AnimatedBuilder(
+                    animation: _obstaclesAnimationController,
+                    builder: (context, child) {
+                      // Animation from manhole to coin (180 degree flip)
+                      final progress = manhole.transformProgress;
+                      final angle = progress * 3.14159; // 180 degree rotation
+                      return Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..setEntry(3, 2, 0.001) // perspective
+                          ..rotateY(angle),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          child: progress < 0.5
+                              ? Image.asset(
+                                  'assets/manhole.png',
+                                  width: 40,
+                                  height: 40,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.brown,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: Colors.black,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.circle_outlined,
+                                          color: Colors.black,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Image.asset(
+                                  'assets/coin.png',
+                                  width: 40,
+                                  height: 40,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: goldColor,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.monetization_on,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      );
+                    },
+                  )
+                : manhole.isTransformedToCoin
                 ? Image.asset(
                     'assets/coin.png',
                     width: 40,
