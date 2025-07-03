@@ -189,20 +189,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [darkBackground, panelGrey],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: goldColor.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(color: darkBackground),
       child: Center(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -225,9 +212,9 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             'CHICKEN ROAD ULTIMATE',
             style: TextStyle(
               color: darkBackground,
-              fontSize: 22,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
+              letterSpacing: 1.2,
             ),
           ),
         ),
@@ -251,7 +238,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Score, Balance and lives
+          // Score and lives (closer together)
           Row(
             children: [
               Container(
@@ -282,30 +269,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 16),
-              // Balance display
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: goldColor,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  CupertinoIcons.money_dollar,
-                  color: darkBackground,
-                  size: 12,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${game.balance.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: goldColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Row(
                 children: List.generate(
                   3,
@@ -335,6 +299,33 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                       size: 12,
                     ),
                   ),
+                ),
+              ),
+            ],
+          ),
+
+          // Balance display (moved to the right)
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: goldColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  CupertinoIcons.money_dollar,
+                  color: darkBackground,
+                  size: 12,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${game.balance.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: goldColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
