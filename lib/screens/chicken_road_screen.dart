@@ -87,7 +87,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     _chickenAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
-    )..repeat();
+    );
 
     _multiplierContainerAnimationController = AnimationController(
       duration: const Duration(milliseconds: 400),
@@ -114,6 +114,11 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
   }
 
   void _moveChickenForward() {
+    // Add chicken animation
+    _chickenAnimationController.forward().then((_) {
+      _chickenAnimationController.reverse();
+    });
+
     // Hide multiplier container during movement
     _multiplierContainerAnimationController.reverse();
     setState(() {
@@ -144,10 +149,16 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
   }
 
   void _moveChickenUp() {
+    _chickenAnimationController.forward().then((_) {
+      _chickenAnimationController.reverse();
+    });
     game.moveChickenUp();
   }
 
   void _moveChickenDown() {
+    _chickenAnimationController.forward().then((_) {
+      _chickenAnimationController.reverse();
+    });
     game.moveChickenDown();
   }
 
@@ -316,20 +327,30 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
           color: roadGrey,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Stack(
-          children: [
-            _buildRoadBackground(),
-            _buildRoadLines(),
-            ..._buildManholes(),
-            ..._buildBarriers(),
-            ..._buildObstacles(),
-            _buildChicken(),
-            if (showMultiplierContainer && game.currentMultiplier > 0)
-              _buildChickenMultiplierContainer(),
-            ..._buildFloatingTexts(),
-            if (game.showCollisionAnimation) _buildCollisionEffect(),
-            if (game.showCashOutAnimation) _buildCashOutEffect(),
-          ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Transform.translate(
+            offset: Offset(
+              game.slideOffset * MediaQuery.of(context).size.width,
+              0,
+            ),
+            child: Stack(
+              children: [
+                _buildRoadBackground(),
+                _buildRoadLines(),
+                ..._buildManholes(),
+                ..._buildBarriers(),
+                ..._buildObstacles(),
+                _buildChicken(),
+                if (showMultiplierContainer && game.currentMultiplier > 0)
+                  _buildChickenMultiplierContainer(),
+                ..._buildFloatingTexts(),
+                if (game.showCollisionAnimation) _buildCollisionEffect(),
+                if (game.showCashOutAnimation) _buildCashOutEffect(),
+                if (game.isSlideAnimating) _buildLevelTransitionOverlay(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -549,16 +570,38 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     final screenHeight = MediaQuery.of(context).size.height * 0.6;
 
     // Chicken moves horizontally (left to right) and between lanes (up/down)
-    return Positioned(
-      left:
-          game.chickenHorizontalPos * screenWidth -
-          25, // Horizontal movement (left to right)
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      left: game.chickenHorizontalPos * screenWidth - 25,
       top:
-          0.5 * screenHeight - 25, // Same positioning as manholes (center line)
-      child: SizedBox(
-        width: 50,
-        height: 50,
-        child: CustomPaint(painter: ChickenPainter()),
+          (game.chickenLane * screenHeight) -
+          25, // Use chickenLane for vertical position
+      child: AnimatedBuilder(
+        animation: _chickenAnimationController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale:
+                1.0 +
+                (0.1 *
+                    (_chickenAnimationController.value > 0.5
+                        ? 1.0 - _chickenAnimationController.value
+                        : _chickenAnimationController.value)),
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: Image.asset(
+                'assets/chicken.png',
+                width: 50,
+                height: 50,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback to custom painter if image not found
+                  return CustomPaint(painter: ChickenPainter());
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -567,11 +610,11 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     final screenWidth = MediaQuery.of(context).size.width - 40;
     final screenHeight = MediaQuery.of(context).size.height * 0.6;
 
-    return Positioned(
-      left:
-          game.chickenHorizontalPos * screenWidth -
-          35, // Center under chicken (wider container)
-      top: 0.5 * screenHeight + 35, // 35 pixels below chicken center
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      left: game.chickenHorizontalPos * screenWidth - 35,
+      top: (game.chickenLane * screenHeight) + 35, // 35 pixels below chicken
       child: AnimatedBuilder(
         animation: _multiplierContainerAnimationController,
         builder: (context, child) {
@@ -902,6 +945,55 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
         ),
       );
     }).toList();
+  }
+
+  Widget _buildLevelTransitionOverlay() {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerRight,
+            end: Alignment.centerLeft,
+            colors: [
+              Colors.transparent,
+              darkBackground.withOpacity(0.8),
+              darkBackground,
+            ],
+            stops: const [0.0, 0.7, 1.0],
+          ),
+        ),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: panelGrey,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: goldColor, width: 2),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.arrow_forward, color: goldColor, size: 40),
+                const SizedBox(height: 10),
+                Text(
+                  'LEVEL ${game.currentLevel}',
+                  style: const TextStyle(
+                    color: goldColor,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                const Text(
+                  'NEW MANHOLES AHEAD!',
+                  style: TextStyle(color: whiteText, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

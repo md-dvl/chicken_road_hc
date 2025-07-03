@@ -149,6 +149,11 @@ class ChickenRoadGame {
   double backgroundOffset = 0.0;
   double gameSpeed = 1.0;
 
+  // Slide animation for infinite gameplay
+  bool isSlideAnimating = false;
+  double slideOffset = 0.0; // For slide animation (-1.0 to 0.0)
+  int currentLevel = 1; // Current level/slide number
+
   // Game objects
   List<Obstacle> obstacles = [];
   List<Multiplier> visibleMultipliers = [];
@@ -238,6 +243,11 @@ class ChickenRoadGame {
     chickenWorldX = 0.0;
     chickenHorizontalPos = 0.1; // Start at left side
     backgroundOffset = 0.0;
+
+    // Reset slide animation
+    isSlideAnimating = false;
+    slideOffset = 0.0;
+    currentLevel = 1;
     currentMultiplier = 0.0; // Start with 0 instead of 1.0
     cashOutAmount = 0.0; // Start with 0 gold
     gameSpeed = difficultySettings[selectedDifficulty]!['gameSpeed'];
@@ -294,11 +304,11 @@ class ChickenRoadGame {
 
   // Move chicken forward (call this on "Go" button press)
   void moveChickenForward() {
-    if (!isGameActive || isPaused) return;
+    if (!isGameActive || isPaused || isSlideAnimating) return;
 
-    // Check if chicken can make another step
+    // Check if chicken has completed all manholes - trigger slide to next level
     if (currentManholeStep >= maxManholeSteps) {
-      // All steps used, cannot move further
+      _startSlideToNextLevel();
       return;
     }
 
@@ -649,5 +659,48 @@ class ChickenRoadGame {
   // Dispose resources
   void dispose() {
     _gameTimer?.cancel();
+  }
+
+  // Start slide animation to next level
+  void _startSlideToNextLevel() {
+    isSlideAnimating = true;
+    slideOffset = 0.0;
+    currentLevel++;
+    _notifyStateChanged();
+
+    // Animate slide effect
+    Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      slideOffset -= 0.05; // Move slide left
+
+      if (slideOffset <= -1.0) {
+        timer.cancel();
+        _completeSlideToNextLevel();
+      }
+
+      _notifyStateChanged();
+    });
+  }
+
+  // Complete slide animation and reset for next level
+  void _completeSlideToNextLevel() {
+    // Reset chicken position
+    currentManholeStep = 0;
+    chickenHorizontalPos = 0.1;
+
+    // Clear old objects except barriers and activated manholes (they stay forever)
+    obstacles.clear();
+    floatingTexts.clear();
+
+    // Keep activated manholes and barriers from previous level but clear non-activated ones
+    manholes.removeWhere((manhole) => !manhole.isActivated);
+
+    // Generate new manholes for the new level
+    _generateInitialManholes();
+
+    // Reset slide animation
+    isSlideAnimating = false;
+    slideOffset = 0.0;
+
+    _notifyStateChanged();
   }
 }
