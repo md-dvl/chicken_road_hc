@@ -43,43 +43,44 @@ class _MainScreenState extends State<MainScreen> {
         border: Border(
           top: BorderSide(color: goldColor.withOpacity(0.3), width: 1),
         ),
+        height: 55, // Немного уменьшим высоту tab bar
         items: [
           BottomNavigationBarItem(
             icon: Container(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 color: _currentIndex == 0
-                    ? goldColor.withOpacity(0.2)
+                    ? goldColor.withOpacity(0.15)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(_icons[0]),
+              child: Icon(_icons[0], size: 26),
             ),
             label: 'Road',
           ),
           BottomNavigationBarItem(
             icon: Container(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 color: _currentIndex == 1
-                    ? goldColor.withOpacity(0.2)
+                    ? goldColor.withOpacity(0.15)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(_icons[1]),
+              child: Icon(_icons[1], size: 26),
             ),
             label: 'Scores',
           ),
           BottomNavigationBarItem(
             icon: Container(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 color: _currentIndex == 2
-                    ? goldColor.withOpacity(0.2)
+                    ? goldColor.withOpacity(0.15)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(_icons[2]),
+              child: Icon(_icons[2], size: 26),
             ),
             label: 'Settings',
           ),

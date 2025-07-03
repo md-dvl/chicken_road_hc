@@ -599,6 +599,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             children: [
               Expanded(
                 child: Container(
+                  height: 56.0, // Фиксированная высота
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [greenButton, accentBlue],
@@ -616,16 +617,19 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                   ),
                   child: CupertinoButton(
                     color: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     onPressed: _handleMainButton,
-                    child: Text(
-                      game.isGameActive
-                          ? 'GO'
-                          : (game.isGameOver ? 'RESTART' : 'START'),
-                      style: const TextStyle(
-                        color: whiteText,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        letterSpacing: 1.0,
+                    child: Center(
+                      child: Text(
+                        game.isGameActive
+                            ? 'GO'
+                            : (game.isGameOver ? 'RESTART' : 'START'),
+                        style: const TextStyle(
+                          color: whiteText,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 1.0,
+                        ),
                       ),
                     ),
                   ),
@@ -634,6 +638,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
               const SizedBox(width: 16),
               Expanded(
                 child: Container(
+                  height: 56.0, // Фиксированная высота
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [goldColor, accentOrange],
@@ -651,15 +656,18 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                   ),
                   child: CupertinoButton(
                     color: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     onPressed: game.isGameActive ? _cashOut : null,
-                    child: Text(
-                      'CASH OUT\n\$${game.cashOutAmount.toStringAsFixed(2)}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: darkBackground,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        letterSpacing: 0.5,
+                    child: Center(
+                      child: Text(
+                        'CASH OUT\n\$${game.cashOutAmount.toStringAsFixed(2)}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: darkBackground,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ),
@@ -671,6 +679,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
           // How to play button
           Center(
             child: Container(
+              height: 32,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [accentPurple.withOpacity(0.7), panelGrey],
@@ -686,7 +695,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
               child: CupertinoButton(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 8,
+                  vertical: 2,
                 ),
                 color: Colors.transparent,
                 child: Row(
