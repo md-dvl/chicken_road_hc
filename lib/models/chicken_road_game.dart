@@ -302,6 +302,30 @@ class ChickenRoadGame {
       chickenWorldX = targetWorldX;
       chickenHorizontalPos =
           0.1 + (currentManholeStep + 1) * 0.2; // Move right on screen
+
+      // Activate the manhole at current step
+      if (currentManholeStep < manholes.length) {
+        final manhole = manholes[currentManholeStep];
+        if (!manhole.isActivated) {
+          manhole.startTransformation();
+
+          // Boost multiplier when manhole is activated
+          final boost = 0.1; // Fixed boost for manhole activation
+          currentMultiplier += boost;
+          cashOutAmount = selectedBet * currentMultiplier;
+          score += 5; // Fixed score boost
+
+          // Add floating text for multiplier boost
+          floatingTexts.add(
+            FloatingText(
+              text: '+${boost.toStringAsFixed(2)}x',
+              position: chickenWorldX,
+              lane: chickenLane,
+            ),
+          );
+        }
+      }
+
       currentManholeStep++;
 
       // Clamp horizontal position
@@ -519,8 +543,10 @@ class ChickenRoadGame {
     for (int i = manholes.length - 1; i >= 0; i--) {
       manholes[i].updateTransformation();
 
-      // Remove manholes that have been passed by the chicken or are too far behind
-      if (manholes[i].worldX < chickenWorldX - 1.0) {
+      // NEVER remove manholes that have been transformed to coins - they stay forever
+      // Only remove manholes that are far behind and NOT activated (not used)
+      if (manholes[i].worldX < chickenWorldX - 1.0 &&
+          !manholes[i].isActivated) {
         manholes.removeAt(i);
       }
     }
@@ -564,35 +590,8 @@ class ChickenRoadGame {
       }
     }
 
-    // Check for manhole interactions - chicken can only activate manholes it steps directly on
-    for (int i = manholes.length - 1; i >= 0; i--) {
-      final manhole = manholes[i];
-      if (!manhole.isActivated &&
-          (manhole.lane - chickenLane).abs() < 0.1 && // Same lane as chicken
-          (manhole.worldX - chickenWorldX).abs() < 0.2) {
-        // Chicken is at manhole position
-        // Activate manhole transformation
-        manhole.startTransformation();
-
-        // Just boost multiplier when manhole is activated
-        final boost = 0.1; // Fixed boost for manhole activation
-        currentMultiplier += boost;
-        cashOutAmount = selectedBet * currentMultiplier;
-        score += 5; // Fixed score boost
-
-        // Add floating text for multiplier boost
-        floatingTexts.add(
-          FloatingText(
-            text: '+${boost.toStringAsFixed(2)}x',
-            position: chickenWorldX,
-            lane: chickenLane,
-          ),
-        );
-
-        _notifyStateChanged();
-        break;
-      }
-    }
+    // Check for manhole interactions - now handled in moveChickenForward()
+    // No need to check here anymore since manholes are activated directly when chicken moves to them
   }
 
   // Game over
