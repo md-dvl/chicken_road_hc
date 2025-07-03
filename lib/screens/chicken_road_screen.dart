@@ -652,8 +652,8 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
         ),
       );
 
-      // Add multiplier text above manhole (only if not transformed to coin)
-      if (!manhole.isTransformedToCoin) {
+      // Add multiplier text above manhole (only if not activated and not transformed to coin)
+      if (!manhole.isActivated && !manhole.isTransformedToCoin) {
         manholeWidgets.add(
           Positioned(
             left:
@@ -692,9 +692,8 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
       return Positioned(
         left: barrier.horizontalPos * screenWidth - 20,
         top:
-            0.5 * screenHeight +
-            (screenHeight * 0.1) -
-            50, // 50 pixels above manholes
+            0.5 * screenHeight -
+            90, // 70 pixels above manholes (top of manholes)
         child: Container(
           width: 40,
           height: 40,
