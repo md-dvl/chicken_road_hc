@@ -777,7 +777,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             20, // Same horizontal position as corresponding manhole
         top:
             (0.5 * screenHeight - 20) -
-            30, // 30 pixels above the manhole position
+            50, // 50 pixels above the manhole position (was 40, now 50)
         child: Container(
           width: 40,
           height: 40,
