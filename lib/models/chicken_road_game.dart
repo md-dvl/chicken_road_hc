@@ -460,7 +460,7 @@ class ChickenRoadGame {
         0.05 * difficultySettings[selectedDifficulty]!['obstacleFrequency']) {
       final lane =
           math.Random().nextInt(5) / 4; // 5 lanes (0, 0.25, 0.5, 0.75, 1.0)
-      final type = math.Random().nextInt(3); // 3 types of cars
+      final type = math.Random().nextInt(4); // 4 types of cars (car1-4.png)
       obstacles.add(
         Obstacle(
           lane: lane,

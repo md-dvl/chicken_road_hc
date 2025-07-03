@@ -515,14 +515,26 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
         child: SizedBox(
           width: 40,
           height: 60, // Make cars taller (like real cars)
-          child: Container(
-            decoration: BoxDecoration(
-              color: redColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Center(
-              child: Icon(Icons.directions_car, color: Colors.white, size: 24),
-            ),
+          child: Image.asset(
+            'assets/car${obstacle.type + 1}.png', // Use car1.png, car2.png, car3.png, car4.png
+            width: 40,
+            height: 60,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback if image not found
+              return Container(
+                decoration: BoxDecoration(
+                  color: redColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.directions_car,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       );
@@ -627,7 +639,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                 width: 40,
                 height: 40,
                 child: Image.asset(
-                  'assets/coins.png',
+                  'assets/coin.png',
                   width: 40,
                   height: 40,
                   errorBuilder: (context, error, stackTrace) {
@@ -690,7 +702,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                           },
                         )
                       : Image.asset(
-                          'assets/coins.png',
+                          'assets/coin.png',
                           width: 40,
                           height: 40,
                           errorBuilder: (context, error, stackTrace) {
