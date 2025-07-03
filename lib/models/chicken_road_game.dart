@@ -77,6 +77,7 @@ class Manhole {
   double verticalPosition; // Vertical position on screen (0-1)
   bool isActivated = false; // Whether chicken has stepped on it
   bool isTransforming = false; // Animation state
+  bool isTransformedToCoin = false; // Whether it's now showing as coin
   int transformAge = 0; // For animation timing
   static const int transformDuration = 30; // Animation frames
 
@@ -97,6 +98,7 @@ class Manhole {
       transformAge++;
       if (transformAge >= transformDuration) {
         isTransforming = false;
+        isTransformedToCoin = true; // Now show as coin
       }
     }
   }
@@ -467,26 +469,44 @@ class ChickenRoadGame {
 
   // Generate manholes for all lanes when chicken changes lanes
   void _generateManholesForNewLane() {
-    // Remove old manholes that are too far behind
+    // Don't generate new manholes if there are already many ahead
+    final existingAheadCount = manholes.where(
+      (manhole) => manhole.worldX > chickenWorldX,
+    ).length;
+    
+    if (existingAheadCount >= 20) return; // Limit manholes ahead
+    
+    // Remove old manholes that are too far behind and not activated
     manholes.removeWhere(
       (manhole) => manhole.worldX < chickenWorldX - 2.0 && !manhole.isActivated,
     );
 
     // Generate new manholes in the center of each lane
     // All at the same height as the chicken
-    for (int i = 1; i <= 5; i++) {
+    final startWorldX = chickenWorldX + 4.0;
+    
+    for (int i = 1; i <= 3; i++) {
       // Place 4 manholes in the center of each lane between dashed lines
       for (int lane = 1; lane < 5; lane++) {
         // Skip first lane (lane 0)
         final lanePosition = (lane * 0.2) + 0.1; // Centers: 0.3, 0.5, 0.7, 0.9
-        manholes.add(
-          Manhole(
-            lane: lanePosition,
-            worldX: chickenWorldX + (i * 2.0), // Spaced every 2 units ahead
-            verticalPosition:
-                chickenLane, // All manholes at the same height as chicken
-          ),
+        final worldX = startWorldX + (i * 2.0);
+        
+        // Check if manhole already exists at this position
+        final existsAtPosition = manholes.any((manhole) => 
+          (manhole.worldX - worldX).abs() < 0.5 && 
+          (manhole.lane - lanePosition).abs() < 0.1
         );
+        
+        if (!existsAtPosition) {
+          manholes.add(
+            Manhole(
+              lane: lanePosition,
+              worldX: worldX,
+              verticalPosition: chickenLane, // All manholes at the same height as chicken
+            ),
+          );
+        }
       }
     }
   }
@@ -576,13 +596,7 @@ class ChickenRoadGame {
           ),
         );
 
-        // Remove the manhole after a delay
-        Timer(const Duration(milliseconds: 500), () {
-          if (manholes.contains(manhole)) {
-            manholes.remove(manhole);
-          }
-          _notifyStateChanged();
-        });
+        _notifyStateChanged();
         break;
       }
     }

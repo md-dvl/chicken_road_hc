@@ -599,10 +599,39 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
         child: AnimatedBuilder(
           animation: _obstaclesAnimationController,
           builder: (context, child) {
-            if (manhole.isTransforming) {
-              // Animation from manhole to coin
+            if (manhole.isTransformedToCoin) {
+              // Show ONLY coin after transformation is complete (no manhole)
+              return Container(
+                width: 40,
+                height: 40,
+                child: Image.asset(
+                  'assets/coins.png',
+                  width: 40,
+                  height: 40,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: goldColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.monetization_on,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            } else if (manhole.isTransforming) {
+              // Animation from manhole to coin (180 degree flip)
               final progress = manhole.transformProgress;
-              final angle = progress * 3.14159; // Half rotation
+              final angle = progress * 3.14159; // 180 degree rotation
               return Transform(
                 alignment: Alignment.center,
                 transform: Matrix4.identity()
@@ -638,26 +667,36 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                             );
                           },
                         )
-                      : Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: goldColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.attach_money,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ),
+                      : Image.asset(
+                          'assets/coins.png',
+                          width: 40,
+                          height: 40,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: goldColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.monetization_on,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                 ),
               );
             } else {
-              // Normal manhole display
+              // Normal manhole display (before activation)
               return Container(
                 width: 40,
                 height: 40,
