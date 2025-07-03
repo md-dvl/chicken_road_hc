@@ -107,6 +107,13 @@ class Manhole {
       isTransforming ? transformAge / transformDuration : 1.0;
 }
 
+class Barrier {
+  double horizontalPos; // Horizontal position (0-1)
+  double verticalPos; // Vertical position (0-1)
+
+  Barrier({required this.horizontalPos, required this.verticalPos});
+}
+
 // Game state and logic controller
 class ChickenRoadGame {
   // Game state
@@ -145,6 +152,7 @@ class ChickenRoadGame {
   List<Multiplier> visibleMultipliers = [];
   List<FloatingText> floatingTexts = [];
   List<Manhole> manholes = []; // Track manholes separately
+  List<Barrier> barriers = []; // Track barriers for activated manholes
 
   // Visual feedback flags
   bool showCashOutAnimation = false;
@@ -236,6 +244,7 @@ class ChickenRoadGame {
     visibleMultipliers.clear();
     floatingTexts.clear();
     manholes.clear(); // Clear manholes
+    barriers.clear(); // Clear barriers
 
     // Reset manhole movement tracking
     currentManholeStep = 0;
@@ -300,14 +309,26 @@ class ChickenRoadGame {
 
       // Move chicken to the next manhole position
       chickenWorldX = targetWorldX;
+      // Update horizontal position to match lane centers: [0.3, 0.5, 0.7, 0.9]
+      List<double> laneCenters = [0.3, 0.5, 0.7, 0.9];
       chickenHorizontalPos =
-          0.1 + (currentManholeStep + 1) * 0.2; // Move right on screen
+          laneCenters[currentManholeStep]; // Move to exact manhole position
 
       // Activate the manhole at current step
       if (currentManholeStep < manholes.length) {
         final manhole = manholes[currentManholeStep];
         if (!manhole.isActivated) {
           manhole.startTransformation();
+
+          // Create a barrier above the activated manhole
+          // Use the same position as the manhole, but store world coordinates
+          barriers.add(
+            Barrier(
+              horizontalPos:
+                  laneCenters[currentManholeStep], // UI position (0.3, 0.5, 0.7, 0.9)
+              verticalPos: 0.5, // Same vertical position as manholes
+            ),
+          );
 
           // Boost multiplier when manhole is activated
           final boost = 0.1; // Fixed boost for manhole activation
@@ -558,6 +579,9 @@ class ChickenRoadGame {
         floatingTexts.removeAt(i);
       }
     }
+
+    // Barriers are created once when manholes are activated
+    // and stay forever - no need to update them here
   }
 
   // Check for collisions and interactions

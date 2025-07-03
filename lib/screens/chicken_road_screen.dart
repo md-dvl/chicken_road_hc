@@ -290,6 +290,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             _buildRoadBackground(),
             _buildRoadLines(),
             ..._buildManholes(),
+            ..._buildBarriers(),
             ..._buildObstacles(),
             _buildChicken(),
             ..._buildFloatingTexts(),
@@ -760,6 +761,45 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
               );
             }
           },
+        ),
+      );
+    }).toList();
+  }
+
+  List<Widget> _buildBarriers() {
+    final screenWidth = MediaQuery.of(context).size.width - 40;
+    final screenHeight = MediaQuery.of(context).size.height * 0.6;
+
+    return game.barriers.map((barrier) {
+      return Positioned(
+        left:
+            barrier.horizontalPos * screenWidth -
+            20, // Same horizontal position as corresponding manhole
+        top:
+            (0.5 * screenHeight - 20) -
+            30, // 30 pixels above the manhole position
+        child: Container(
+          width: 40,
+          height: 40,
+          child: Image.asset(
+            'assets/barrier.png',
+            width: 40,
+            height: 40,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.black, width: 2),
+                ),
+                child: const Center(
+                  child: Icon(Icons.block, color: Colors.white, size: 20),
+                ),
+              );
+            },
+          ),
         ),
       );
     }).toList();
