@@ -202,7 +202,7 @@ class ChickenRoadGame {
   };
 
   // Game data
-  static const List<int> betOptions = [1, 2, 5, 10];
+  static const List<int> betOptions = [1, 2, 5];
   static const List<String> difficulties = [
     'Easy',
     'Medium',

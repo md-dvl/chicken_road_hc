@@ -199,17 +199,6 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
           ),
           Row(
             children: [
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                child: const Icon(
-                  CupertinoIcons.question_circle,
-                  color: whiteText,
-                ),
-                onPressed: () => _showHowToPlay(),
-              ),
-              const SizedBox(width: 8),
-              const Text('How to play?', style: TextStyle(color: whiteText)),
-              const SizedBox(width: 20),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -287,7 +276,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              '${game.currentMultiplier.toStringAsFixed(2)}x',
+              '\$${game.currentMultiplier.toStringAsFixed(2)}',
               style: const TextStyle(
                 color: whiteText,
                 fontWeight: FontWeight.bold,
@@ -456,7 +445,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             ],
           ),
           const SizedBox(height: 16),
-          // Action buttons
+          // Action buttons and How to play
           Row(
             children: [
               Expanded(
@@ -479,28 +468,41 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                 child: CupertinoButton(
                   color: goldColor,
                   onPressed: game.isGameActive ? _cashOut : null,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'CASH OUT',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        '${game.cashOutAmount.toStringAsFixed(2)} USD',
-                        style: const TextStyle(
-                          color: Colors.black87,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'CASH OUT\n\$${game.cashOutAmount.toStringAsFixed(2)}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          // How to play button
+          Center(
+            child: CupertinoButton(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(
+                    CupertinoIcons.question_circle,
+                    color: whiteText,
+                    size: 16,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'How to play?',
+                    style: TextStyle(color: whiteText, fontSize: 14),
+                  ),
+                ],
+              ),
+              onPressed: () => _showHowToPlay(),
+            ),
           ),
         ],
       ),
@@ -644,7 +646,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                   ],
                 ),
                 child: Text(
-                  '${game.currentMultiplier.toStringAsFixed(1)}', // Show as gold amount, not multiplier
+                  '\$${game.currentMultiplier.toStringAsFixed(1)}', // Show as gold amount with $ symbol
                   style: const TextStyle(
                     color: goldColor,
                     fontSize: 12,
