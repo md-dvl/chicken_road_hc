@@ -141,6 +141,7 @@ class ChickenRoadGame {
 
   // Manhole movement restrictions
   int currentManholeStep = 0; // Current step (0-4)
+  int previousManholeStep = -1; // Previous step to track transformations
   static const int maxManholeSteps = 4; // Maximum steps per line
   List<double> currentLineManholePositions =
       []; // X positions of manholes on current line
@@ -249,6 +250,7 @@ class ChickenRoadGame {
 
     // Reset manhole movement tracking
     currentManholeStep = 0;
+    previousManholeStep = -1;
     currentLineManholePositions.clear();
 
     // Generate initial manholes for the current line
@@ -316,11 +318,22 @@ class ChickenRoadGame {
       chickenHorizontalPos =
           laneCenters[currentManholeStep]; // Move to exact manhole position
 
-      // Activate the manhole at current step
+      // Start transformation of previous manhole (when moving to next)
+      if (previousManholeStep >= 0 && previousManholeStep < manholes.length) {
+        final previousManhole = manholes[previousManholeStep];
+        if (previousManhole.isActivated &&
+            !previousManhole.isTransforming &&
+            !previousManhole.isTransformedToCoin) {
+          previousManhole.startTransformation();
+        }
+      }
+
+      // Activate the manhole at current step (but don't transform yet)
       if (currentManholeStep < manholes.length) {
         final manhole = manholes[currentManholeStep];
         if (!manhole.isActivated) {
-          manhole.startTransformation();
+          manhole.isActivated =
+              true; // Mark as activated but don't start transformation
 
           // Create a barrier above the activated manhole
           // Use the same position as the manhole, but store world coordinates
@@ -355,6 +368,8 @@ class ChickenRoadGame {
         }
       }
 
+      // Update previous step tracker
+      previousManholeStep = currentManholeStep;
       currentManholeStep++;
 
       // Clamp horizontal position
@@ -677,6 +692,16 @@ class ChickenRoadGame {
 
   // Start slide animation to next level
   void _startSlideToNextLevel() {
+    // Start transformation of the last manhole before sliding to next level
+    if (previousManholeStep >= 0 && previousManholeStep < manholes.length) {
+      final lastManhole = manholes[previousManholeStep];
+      if (lastManhole.isActivated &&
+          !lastManhole.isTransforming &&
+          !lastManhole.isTransformedToCoin) {
+        lastManhole.startTransformation();
+      }
+    }
+
     isSlideAnimating = true;
     slideOffset = 0.0;
     currentLevel++;
@@ -699,6 +724,7 @@ class ChickenRoadGame {
   void _completeSlideToNextLevel() {
     // Reset chicken position
     currentManholeStep = 0;
+    previousManholeStep = -1;
     chickenHorizontalPos = 0.1;
 
     // Clear ALL old objects for new level - only keep gold/multiplier

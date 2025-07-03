@@ -728,7 +728,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
       builder: (context) => CupertinoAlertDialog(
         title: const Text('How to Play'),
         content: const Text(
-          '1. Select your bet amount and difficulty.\n2. Press START to begin.\n3. Swipe up/down to move the chicken between lanes.\n4. Avoid cars moving down the road and collect coins.\n5. Press GO to move the chicken to the right.\n6. Press CASH OUT at any time to take your winnings before you crash!\n\nThe game is infinite - survive as long as possible!',
+          '1. Select your award amount and difficulty.\n2. Press START to begin.\n3. Avoid cars moving down the road and collect coins.\n4. Press GO to move the chicken to the right.\n5. Press CASH OUT at any time to take your winnings before you crash!\n\nThe game is infinite - survive as long as possible!',
         ),
         actions: [
           CupertinoDialogAction(
