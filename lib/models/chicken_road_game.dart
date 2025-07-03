@@ -615,12 +615,24 @@ class ChickenRoadGame {
   void _checkCollisions() {
     if (!isGameActive) return;
 
-    // Check for car (obstacle) collisions - cars move vertically, chicken moves horizontally
+    // Check for car (obstacle) collisions
     for (final obstacle in obstacles) {
-      // Check if car is in the same lane as chicken and at the chicken's vertical position
-      if ((obstacle.lane - chickenLane).abs() < 0.15 &&
-          (obstacle.verticalPosition - chickenHorizontalPos).abs() < 0.1) {
-        // Show collision animation
+      // 1. Check if the car and chicken are on the same horizontal position (which lane).
+      // The chicken moves between manholes at horizontal positions [0.3, 0.5, 0.7, 0.9].
+      // The car can be on any of the 5 lanes [0.1, 0.3, 0.5, 0.7, 0.9].
+      // We need to check if the car's lane matches the chicken's current horizontal step.
+      final horizontalMatch =
+          (obstacle.lane - chickenHorizontalPos).abs() < 0.08;
+
+      // 2. Check if the car and chicken are on the same vertical position (which road lane).
+      // The chicken moves between lanes [0.1, 0.3, 0.5, 0.7, 0.9].
+      // The car moves from top to bottom (verticalPosition from -0.1 to 1.2).
+      // A collision happens if the car's vertical position overlaps with the chicken's lane.
+      final verticalMatch =
+          (obstacle.verticalPosition - chickenLane).abs() < 0.08;
+
+      if (horizontalMatch && verticalMatch) {
+        // Collision detected!
         showCollisionAnimation = true;
         Timer(const Duration(milliseconds: 500), () {
           showCollisionAnimation = false;
@@ -633,10 +645,10 @@ class ChickenRoadGame {
         if (chickenLives <= 0) {
           _gameOver();
         } else {
-          // Remove this car
+          // Remove the car that was hit
           obstacles.remove(obstacle);
           _notifyStateChanged();
-          break;
+          break; // Exit loop after one collision
         }
       }
     }

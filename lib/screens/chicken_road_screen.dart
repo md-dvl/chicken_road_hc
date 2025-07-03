@@ -739,9 +739,10 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
 
     return game.obstacles.map((obstacle) {
       // Cars move vertically down the lanes
+      // Lane positions: 0.1, 0.3, 0.5, 0.7, 0.9 correspond to centers between dashed lines
       return Positioned(
-        left: obstacle.lane * screenWidth - 20, // Lane position (horizontal)
-        top: obstacle.verticalPosition * screenHeight - 20, // Vertical movement
+        left: obstacle.lane * screenWidth - 20, // Center cars in lanes
+        top: obstacle.verticalPosition * screenHeight - 30,
         child: SizedBox(
           width: 40,
           height: 60, // Make cars taller (like real cars)
@@ -775,14 +776,14 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     final screenWidth = MediaQuery.of(context).size.width - 40;
     final screenHeight = MediaQuery.of(context).size.height * 0.6;
 
-    // Chicken moves horizontally (left to right) and between lanes (up/down)
+    // Chicken position:
+    // - Horizontal (left-right): controlled by chickenHorizontalPos (0.1 to 0.9)
+    // - Vertical (lane): controlled by chickenLane (0.1, 0.3, 0.5, 0.7, 0.9)
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       left: game.chickenHorizontalPos * screenWidth - 25,
-      top:
-          (game.chickenLane * screenHeight) -
-          25, // Use chickenLane for vertical position
+      top: game.chickenLane * screenHeight - 25, // Same positioning as cars
       child: AnimatedBuilder(
         animation: _chickenAnimationController,
         builder: (context, child) {
@@ -820,7 +821,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       left: game.chickenHorizontalPos * screenWidth - 35,
-      top: (game.chickenLane * screenHeight) + 35, // 35 pixels below chicken
+      top: game.chickenLane * screenHeight + 35, // 35 pixels below chicken
       child: AnimatedBuilder(
         animation: _multiplierContainerAnimationController,
         builder: (context, child) {
