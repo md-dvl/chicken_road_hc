@@ -277,7 +277,6 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             _buildRoadLines(),
             ..._buildManholes(),
             ..._buildObstacles(),
-            ..._buildCoins(),
             _buildChicken(),
             ..._buildFloatingTexts(),
             if (game.showCollisionAnimation) _buildCollisionEffect(),
@@ -302,63 +301,6 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
       size: Size.infinite,
       painter: RoadLinesPainter(0.0), // Static road lines without animation
     );
-  }
-
-  List<Widget> _buildCoins() {
-    final screenWidth = MediaQuery.of(context).size.width - 40;
-    final screenHeight = MediaQuery.of(context).size.height * 0.6;
-    return game.coins.map((coin) {
-      // Coins also move vertically down the lanes
-      return Positioned(
-        left: coin.lane * screenWidth - 15, // Lane position
-        top: coin.verticalPosition * screenHeight - 15, // Vertical movement
-        child: Container(
-          width: 30,
-          height: 30,
-          child: coin.isFromManhole
-              ? Image.asset(
-                  'assets/coin.png',
-                  width: 30,
-                  height: 30,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback if asset doesn't exist
-                    return Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: goldColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.attach_money,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    );
-                  },
-                )
-              : Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: goldColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.attach_money,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ),
-        ),
-      );
-    }).toList();
   }
 
   List<Widget> _buildFloatingTexts() {

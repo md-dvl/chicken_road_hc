@@ -134,7 +134,6 @@ class ChickenRoadGame {
 
   // Game objects
   List<Obstacle> obstacles = [];
-  List<Coin> coins = [];
   List<Multiplier> visibleMultipliers = [];
   List<FloatingText> floatingTexts = [];
   List<Manhole> manholes = []; // Track manholes separately
@@ -226,7 +225,6 @@ class ChickenRoadGame {
     gameSpeed = difficultySettings[selectedDifficulty]!['gameSpeed'];
     chickenLives = difficultySettings[selectedDifficulty]!['lives'];
     obstacles.clear();
-    coins.clear();
     visibleMultipliers.clear();
     floatingTexts.clear();
     manholes.clear(); // Clear manholes
@@ -426,20 +424,6 @@ class ChickenRoadGame {
       );
     }
 
-    // Random coin generation - also move vertically
-    if (math.Random().nextDouble() < 0.03) {
-      final lane = math.Random().nextInt(5) / 4; // 5 lanes vertically
-      coins.add(
-        Coin(
-          lane: lane,
-          position: 1.0,
-          value: math.Random().nextInt(3) + 1,
-          worldX: chickenWorldX + math.Random().nextDouble() * 2.0,
-          verticalPosition: -0.1, // Start above the screen
-        ),
-      );
-    }
-
     // Generate static manholes on the road ahead of chicken
     // Place 4 manholes on the same horizontal line
     final manholeSpacing = 2.0; // Distance between manhole rows
@@ -519,16 +503,6 @@ class ChickenRoadGame {
       }
     }
 
-    // Update coins - also move them down vertically
-    for (int i = coins.length - 1; i >= 0; i--) {
-      coins[i].verticalPosition += 0.03 * gameSpeed; // Move down
-
-      // Remove coins that have passed the bottom
-      if (coins[i].verticalPosition > 1.2) {
-        coins.removeAt(i);
-      }
-    }
-
     // Update manholes - animate transformation if activated
     for (int i = manholes.length - 1; i >= 0; i--) {
       manholes[i].updateTransformation();
@@ -578,39 +552,6 @@ class ChickenRoadGame {
       }
     }
 
-    // Check for coin collections - coins also move vertically
-    for (int i = coins.length - 1; i >= 0; i--) {
-      if ((coins[i].lane - chickenLane).abs() < 0.15 &&
-          (coins[i].verticalPosition - chickenHorizontalPos).abs() < 0.1) {
-        // Collect coin
-        final coinValue = coins[i].value; // capture value
-        score += coinValue;
-        coinsCounted += coinValue;
-        showCoinCollectionAnimation = true;
-        coins.removeAt(i); // remove coin
-
-        Timer(const Duration(milliseconds: 300), () {
-          showCoinCollectionAnimation = false;
-          _notifyStateChanged();
-        });
-
-        // Boost multiplier
-        final boost = 0.05 * coinValue;
-        currentMultiplier += boost; // apply boost
-        cashOutAmount = selectedBet * currentMultiplier;
-
-        // Add floating text for multiplier boost
-        floatingTexts.add(
-          FloatingText(
-            text: '+${boost.toStringAsFixed(2)}x',
-            position: chickenWorldX,
-            lane: chickenLane,
-          ),
-        );
-        break;
-      }
-    }
-
     // Check for manhole interactions - chicken can activate any nearby manhole
     for (int i = manholes.length - 1; i >= 0; i--) {
       final manhole = manholes[i];
@@ -620,22 +561,23 @@ class ChickenRoadGame {
         // Activate manhole transformation
         manhole.startTransformation();
 
-        // Transform manhole into coin after animation completes
-        Timer(const Duration(milliseconds: 500), () {
-          // Create a coin at the manhole's position
-          coins.add(
-            Coin(
-              lane: manhole.lane,
-              position: 1.0,
-              value: 2, // Higher value for transformed coin
-              worldX: manhole.worldX,
-              verticalPosition: manhole
-                  .verticalPosition, // Coin appears at the manhole's position
-              isFromManhole: true, // Mark this as a coin from manhole
-            ),
-          );
+        // Just boost multiplier when manhole is activated
+        final boost = 0.1; // Fixed boost for manhole activation
+        currentMultiplier += boost;
+        cashOutAmount = selectedBet * currentMultiplier;
+        score += 5; // Fixed score boost
 
-          // Remove the manhole
+        // Add floating text for multiplier boost
+        floatingTexts.add(
+          FloatingText(
+            text: '+${boost.toStringAsFixed(2)}x',
+            position: chickenWorldX,
+            lane: chickenLane,
+          ),
+        );
+
+        // Remove the manhole after a delay
+        Timer(const Duration(milliseconds: 500), () {
           if (manholes.contains(manhole)) {
             manholes.remove(manhole);
           }
