@@ -80,11 +80,13 @@ class Manhole {
   bool isTransformedToCoin = false; // Whether it's now showing as coin
   int transformAge = 0; // For animation timing
   static const int transformDuration = 30; // Animation frames
+  double multiplier; // Multiplier value for this manhole
 
   Manhole({
     required this.lane,
     required this.worldX,
     required this.verticalPosition,
+    required this.multiplier,
   });
 
   void startTransformation() {
@@ -330,16 +332,16 @@ class ChickenRoadGame {
             ),
           );
 
-          // Boost multiplier when manhole is activated
-          final boost = 0.1; // Fixed boost for manhole activation
-          currentMultiplier += boost;
+          // Add gold based on manhole's multiplier
+          final goldBoost = manhole.multiplier; // Use manhole's multiplier
+          currentMultiplier += goldBoost;
           cashOutAmount = selectedBet * currentMultiplier;
           score += 5; // Fixed score boost
 
-          // Add floating text for multiplier boost
+          // Add floating text for gold boost
           floatingTexts.add(
             FloatingText(
-              text: '+${boost.toStringAsFixed(2)}x',
+              text: '+${goldBoost.toStringAsFixed(1)} Gold',
               position: chickenWorldX,
               lane: chickenLane,
             ),
@@ -454,24 +456,9 @@ class ChickenRoadGame {
 
   // Update multiplier progression
   void _updateMultiplier() {
-    // Find the next multiplier level
-    for (int i = 0; i < multiplierLevels.length; i++) {
-      if (currentMultiplier < multiplierLevels[i]) {
-        // Gradually increase toward next level
-        double multiplierRate =
-            difficultySettings[selectedDifficulty]!['multiplierRate'];
-        currentMultiplier += multiplierRate * gameSpeed;
-
-        // Cap at the next level
-        if (currentMultiplier > multiplierLevels[i]) {
-          currentMultiplier = multiplierLevels[i];
-        }
-
-        // Update cash out amount
-        cashOutAmount = selectedBet * currentMultiplier;
-        break;
-      }
-    }
+    // No automatic multiplier increase - only manual through manhole activation
+    // Update cash out amount based on current multiplier
+    cashOutAmount = selectedBet * currentMultiplier;
   }
 
   // Generate game objects (obstacles, coins, multipliers)
@@ -513,11 +500,15 @@ class ChickenRoadGame {
           chickenWorldX + 2.0 + (i * 1.5); // Space manholes 1.5 units apart
       currentLineManholePositions.add(worldX);
 
+      // Generate random multiplier between 1.1 and 3.0
+      final multiplier = 1.1 + (math.Random().nextDouble() * 1.9); // 1.1 to 3.0
+
       manholes.add(
         Manhole(
           lane: 0.5, // All manholes on the same horizontal line (center)
           worldX: worldX,
           verticalPosition: 0.5, // All on same vertical position
+          multiplier: multiplier,
         ),
       );
     }
@@ -538,11 +529,15 @@ class ChickenRoadGame {
           chickenWorldX + 2.0 + (i * 1.5); // Space manholes 1.5 units apart
       currentLineManholePositions.add(worldX);
 
+      // Generate random multiplier between 1.1 and 3.0
+      final multiplier = 1.1 + (math.Random().nextDouble() * 1.9); // 1.1 to 3.0
+
       manholes.add(
         Manhole(
           lane: 0.5, // All manholes on the same horizontal line (center)
           worldX: worldX,
           verticalPosition: 0.5, // All on same vertical position
+          multiplier: multiplier,
         ),
       );
     }

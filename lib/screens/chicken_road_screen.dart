@@ -318,37 +318,6 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     );
   }
 
-  List<Widget> _buildFloatingTexts() {
-    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox == null) return [];
-    final size = renderBox.size;
-
-    return game.floatingTexts.map((ft) {
-      return Positioned(
-        left: ft.lane * (size.width - 40),
-        top: (ft.position * (size.height * 0.6)) - (ft.animationProgress * 50),
-        child: Opacity(
-          opacity: 1.0 - ft.animationProgress,
-          child: Text(
-            ft.text,
-            style: const TextStyle(
-              color: Colors.greenAccent,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              shadows: [
-                Shadow(
-                  blurRadius: 2.0,
-                  color: Colors.black,
-                  offset: Offset(1.0, 1.0),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }).toList();
-  }
-
   Widget _buildControlPanel() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -631,136 +600,85 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
         top:
             0.5 * screenHeight -
             20, // All manholes on same horizontal line (center)
-        child: AnimatedBuilder(
-          animation: _obstaclesAnimationController,
-          builder: (context, child) {
-            if (manhole.isTransformedToCoin) {
-              // Show ONLY coin after transformation is complete (no manhole)
-              return Container(
-                width: 40,
-                height: 40,
-                child: Image.asset(
-                  'assets/coin.png',
-                  width: 40,
-                  height: 40,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Manhole/Coin
+            Container(
+              width: 40,
+              height: 40,
+              child: manhole.isTransformedToCoin
+                  ? Image.asset(
+                      'assets/coin.png',
                       width: 40,
                       height: 40,
-                      decoration: BoxDecoration(
-                        color: goldColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.monetization_on,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            } else if (manhole.isTransforming) {
-              // Animation from manhole to coin (180 degree flip)
-              final progress = manhole.transformProgress;
-              final angle = progress * 3.14159; // 180 degree rotation
-              return Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.001) // perspective
-                  ..rotateY(angle),
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: goldColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.monetization_on,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Image.asset(
+                      'assets/manhole.png',
+                      width: 40,
+                      height: 40,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.brown,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.black, width: 2),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.circle_outlined,
+                              color: Colors.black,
+                              size: 20,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            // Multiplier text overlay (only show if not transformed to coin)
+            if (!manhole.isTransformedToCoin)
+              Positioned(
+                top: -5,
+                left: 0,
+                right: 0,
                 child: Container(
-                  width: 40,
-                  height: 40,
-                  child: progress < 0.5
-                      ? Image.asset(
-                          'assets/manhole.png',
-                          width: 40,
-                          height: 40,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.brown,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.black,
-                                  width: 2,
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.circle_outlined,
-                                  color: Colors.black,
-                                  size: 20,
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                      : Image.asset(
-                          'assets/coin.png',
-                          width: 40,
-                          height: 40,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: goldColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.monetization_on,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${manhole.multiplier.toStringAsFixed(1)}x',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              );
-            } else {
-              // Normal manhole display (before activation)
-              return Container(
-                width: 40,
-                height: 40,
-                child: Image.asset(
-                  'assets/manhole.png',
-                  width: 40,
-                  height: 40,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.brown,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.black, width: 2),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.circle_outlined,
-                          color: Colors.black,
-                          size: 20,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            }
-          },
+              ),
+          ],
         ),
       );
     }).toList();
@@ -772,12 +690,8 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
 
     return game.barriers.map((barrier) {
       return Positioned(
-        left:
-            barrier.horizontalPos * screenWidth -
-            20, // Same horizontal position as corresponding manhole
-        top:
-            (0.5 * screenHeight - 20) -
-            50, // 50 pixels above the manhole position (was 40, now 50)
+        left: barrier.horizontalPos * screenWidth - 20,
+        top: 0.5 * screenHeight + (screenHeight * 0.1) - 50, // 50 pixels above manholes
         child: Container(
           width: 40,
           height: 40,
@@ -791,14 +705,49 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                 height: 40,
                 decoration: BoxDecoration(
                   color: Colors.red,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(4),
                   border: Border.all(color: Colors.black, width: 2),
                 ),
                 child: const Center(
-                  child: Icon(Icons.block, color: Colors.white, size: 20),
+                  child: Icon(
+                    Icons.warning,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               );
             },
+          ),
+        ),
+      );
+    }).toList();
+  }
+
+  List<Widget> _buildFloatingTexts() {
+    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return [];
+    final size = renderBox.size;
+
+    return game.floatingTexts.map((ft) {
+      return Positioned(
+        left: ft.lane * (size.width - 40),
+        top: (ft.position * (size.height * 0.6)) - (ft.animationProgress * 50),
+        child: Opacity(
+          opacity: 1.0 - ft.animationProgress,
+          child: Text(
+            ft.text,
+            style: const TextStyle(
+              color: Colors.greenAccent,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              shadows: [
+                Shadow(
+                  blurRadius: 2.0,
+                  color: Colors.black,
+                  offset: Offset(1.0, 1.0),
+                ),
+              ],
+            ),
           ),
         ),
       );
