@@ -583,105 +583,105 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
   List<Widget> _buildManholes() {
     final screenWidth = MediaQuery.of(context).size.width - 40;
     final screenHeight = MediaQuery.of(context).size.height * 0.6;
+    final List<double> laneCenters = [0.3, 0.5, 0.7, 0.9];
 
-    return game.manholes.map((manhole) {
-      // Manholes are positioned horizontally at centers between lane dividers
-      // Lane centers: 0.3, 0.5, 0.7, 0.9 (between dashed lines, excluding first lane)
-      List<double> laneCenters = [0.3, 0.5, 0.7, 0.9];
-      int manholeIndex = game.manholes.indexOf(manhole);
+    List<Widget> manholeWidgets = [];
 
-      // Get horizontal position for this manhole (center between lane dividers)
-      double horizontalLanePos = laneCenters[manholeIndex % laneCenters.length];
+    for (int i = 0; i < game.manholes.length; i++) {
+      final manhole = game.manholes[i];
+      final horizontalLanePos = laneCenters[i % laneCenters.length];
 
-      return Positioned(
-        left:
-            horizontalLanePos * screenWidth -
-            20, // Center between lane dividers
-        top:
-            0.5 * screenHeight -
-            20, // All manholes on same horizontal line (center)
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Manhole/Coin
-            Container(
-              width: 40,
-              height: 40,
-              child: manhole.isTransformedToCoin
-                  ? Image.asset(
-                      'assets/coin.png',
-                      width: 40,
-                      height: 40,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: goldColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
+      // Add manhole/coin
+      manholeWidgets.add(
+        Positioned(
+          left: horizontalLanePos * screenWidth - 20,
+          top:
+              0.5 * screenHeight -
+              20, // All manholes on same horizontal line (center)
+          child: Container(
+            width: 40,
+            height: 40,
+            child: manhole.isTransformedToCoin
+                ? Image.asset(
+                    'assets/coin.png',
+                    width: 40,
+                    height: 40,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: goldColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.monetization_on,
+                            color: Colors.white,
+                            size: 20,
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.monetization_on,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                        ),
+                      );
+                    },
+                  )
+                : Image.asset(
+                    'assets/manhole.png',
+                    width: 40,
+                    height: 40,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.brown,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.black, width: 2),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.circle_outlined,
+                            color: Colors.black,
+                            size: 20,
                           ),
-                        );
-                      },
-                    )
-                  : Image.asset(
-                      'assets/manhole.png',
-                      width: 40,
-                      height: 40,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.brown,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.black, width: 2),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.circle_outlined,
-                              color: Colors.black,
-                              size: 20,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            // Multiplier text overlay (only show if not transformed to coin)
-            if (!manhole.isTransformedToCoin)
-              Positioned(
-                top: -5,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(8),
+                        ),
+                      );
+                    },
                   ),
-                  child: Text(
-                    '${manhole.multiplier.toStringAsFixed(1)}x',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
       );
-    }).toList();
+
+      // Add multiplier text above manhole (only if not transformed to coin)
+      if (!manhole.isTransformedToCoin) {
+        manholeWidgets.add(
+          Positioned(
+            left:
+                horizontalLanePos * screenWidth - 30, // Slightly wider for text
+            top: 0.5 * screenHeight - 50, // 30 pixels above manhole
+            child: Container(
+              width: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '${manhole.multiplier.toStringAsFixed(1)}x',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return manholeWidgets;
   }
 
   List<Widget> _buildBarriers() {
@@ -691,7 +691,10 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
     return game.barriers.map((barrier) {
       return Positioned(
         left: barrier.horizontalPos * screenWidth - 20,
-        top: 0.5 * screenHeight + (screenHeight * 0.1) - 50, // 50 pixels above manholes
+        top:
+            0.5 * screenHeight +
+            (screenHeight * 0.1) -
+            50, // 50 pixels above manholes
         child: Container(
           width: 40,
           height: 40,
@@ -704,16 +707,12 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.black, width: 2),
                 ),
                 child: const Center(
-                  child: Icon(
-                    Icons.warning,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.warning, color: Colors.black, size: 20),
                 ),
               );
             },
@@ -737,16 +736,9 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
           child: Text(
             ft.text,
             style: const TextStyle(
-              color: Colors.greenAccent,
-              fontSize: 18,
+              color: Colors.green,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              shadows: [
-                Shadow(
-                  blurRadius: 2.0,
-                  color: Colors.black,
-                  offset: Offset(1.0, 1.0),
-                ),
-              ],
             ),
           ),
         ),
@@ -767,34 +759,35 @@ class RoadLinesPainter extends CustomPainter {
       ..color = Colors.white
       ..strokeWidth = 2;
 
-    final dashHeight = 30.0;
-    final dashSpace = 15.0;
-    final totalHeight = dashHeight + dashSpace;
-    final offset = animation * totalHeight;
-
-    // Draw vertical lane dividers
+    // Draw dashed lines for road lanes
     for (int i = 1; i < 5; i++) {
-      final x = size.width * i / 5;
-      for (
-        double y = -offset % totalHeight;
-        y < size.height + totalHeight;
-        y += totalHeight
-      ) {
-        canvas.drawLine(Offset(x, y), Offset(x, y + dashHeight), paint);
+      final x = (size.width / 5) * i;
+      for (double y = 0; y < size.height; y += 20) {
+        canvas.drawLine(Offset(x, y), Offset(x, y + 10), paint);
       }
     }
 
-    // Draw top and bottom barriers
+    // Draw side barriers
     final sideBarrierPaint = Paint()
-      ..color = Colors.orange
-      ..strokeWidth = 5;
+      ..color = Colors.yellow
+      ..strokeWidth = 4;
 
-    // Top barrier
+    // Left barrier
     canvas.drawLine(
-      const Offset(0, 10),
-      Offset(size.width, 10),
+      Offset(0, 10),
+      Offset(0, size.height - 10),
       sideBarrierPaint,
     );
+
+    // Right barrier
+    canvas.drawLine(
+      Offset(size.width, 10),
+      Offset(size.width, size.height - 10),
+      sideBarrierPaint,
+    );
+
+    // Top barrier
+    canvas.drawLine(Offset(0, 10), Offset(size.width, 10), sideBarrierPaint);
 
     // Bottom barrier
     canvas.drawLine(
