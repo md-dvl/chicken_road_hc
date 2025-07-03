@@ -687,12 +687,11 @@ class ChickenRoadGame {
     currentManholeStep = 0;
     chickenHorizontalPos = 0.1;
 
-    // Clear old objects except barriers and activated manholes (they stay forever)
+    // Clear ALL old objects for new level - only keep gold/multiplier
     obstacles.clear();
     floatingTexts.clear();
-
-    // Keep activated manholes and barriers from previous level but clear non-activated ones
-    manholes.removeWhere((manhole) => !manhole.isActivated);
+    manholes.clear(); // Clear all manholes (including activated ones)
+    barriers.clear(); // Clear all barriers from previous level
 
     // Generate new manholes for the new level
     _generateInitialManholes();
