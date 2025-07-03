@@ -315,14 +315,47 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
         child: Container(
           width: 30,
           height: 30,
-          decoration: BoxDecoration(
-            color: goldColor,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
-          ),
-          child: const Center(
-            child: Icon(Icons.attach_money, color: Colors.white, size: 18),
-          ),
+          child: coin.isFromManhole
+              ? Image.asset(
+                  'assets/coin.png',
+                  width: 30,
+                  height: 30,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback if asset doesn't exist
+                    return Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: goldColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.attach_money,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: goldColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.attach_money,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
         ),
       );
     }).toList();

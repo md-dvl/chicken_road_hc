@@ -24,6 +24,7 @@ class Coin {
   int value; // Coin value
   double worldX; // Absolute world X position
   double verticalPosition; // Vertical position for coins moving down (0-1)
+  bool isFromManhole; // Whether this coin came from a manhole transformation
 
   Coin({
     required this.lane,
@@ -31,6 +32,7 @@ class Coin {
     required this.value,
     required this.worldX,
     required this.verticalPosition,
+    this.isFromManhole = false, // Default to false for regular coins
   });
 }
 
@@ -229,15 +231,20 @@ class ChickenRoadGame {
     floatingTexts.clear();
     manholes.clear(); // Clear manholes
 
-    // Generate initial manholes on all lanes
-    for (int row = 0; row < 3; row++) {
-      for (int lane = 0; lane < 5; lane++) {
-        final lanePosition = lane / 4.0; // 5 lanes: 0, 0.25, 0.5, 0.75, 1.0
+    // Generate initial manholes on all 4 lanes (excluding first lane)
+    for (int row = 0; row < 5; row++) {
+      // Create 4 manholes in the center of each lane between the dashed lines
+      // All manholes on the same horizontal line (same height as chicken)
+      for (int lane = 1; lane < 5; lane++) {
+        // Skip first lane (lane 0)
+        final lanePosition = (lane * 0.2) + 0.1; // Centers: 0.3, 0.5, 0.7, 0.9
         manholes.add(
           Manhole(
             lane: lanePosition,
-            worldX: chickenWorldX + 2.0 + (row * 2.0), // Spaced every 2 units
-            verticalPosition: lanePosition,
+            worldX:
+                chickenWorldX + 2.0 + (row * 2.0), // Spaced every 2 units ahead
+            verticalPosition:
+                chickenLane, // All manholes at the same height as chicken
           ),
         );
       }
@@ -297,6 +304,7 @@ class ChickenRoadGame {
       chickenLane -=
           0.25; // Move to upper lane (5 lanes: 0, 0.25, 0.5, 0.75, 1.0)
       if (chickenLane < 0.0) chickenLane = 0.0;
+      _generateManholesForNewLane(); // Generate manholes for new lane
       _notifyStateChanged();
     }
   }
@@ -307,6 +315,7 @@ class ChickenRoadGame {
       chickenLane +=
           0.25; // Move to lower lane (5 lanes: 0, 0.25, 0.5, 0.75, 1.0)
       if (chickenLane > 1.0) chickenLane = 1.0;
+      _generateManholesForNewLane(); // Generate manholes for new lane
       _notifyStateChanged();
     }
   }
@@ -432,9 +441,9 @@ class ChickenRoadGame {
     }
 
     // Generate static manholes on the road ahead of chicken
-    // Place manholes on all lanes at regular intervals
-    final manholeSpacing = 3.0; // Distance between manhole rows
-    final lookAheadDistance = 20.0; // How far ahead to place manholes
+    // Place 4 manholes on the same horizontal line
+    final manholeSpacing = 2.0; // Distance between manhole rows
+    final lookAheadDistance = 10.0; // How far ahead to place manholes
 
     // Calculate the farthest manhole position
     final farthestManholeX = manholes.isNotEmpty
@@ -447,23 +456,53 @@ class ChickenRoadGame {
           ? chickenWorldX + 4.0
           : farthestManholeX + manholeSpacing;
 
-      // Create manholes across all lanes at regular intervals
+      // Create 4 manholes on the same horizontal line at regular intervals
       for (
         double x = startX;
         x < chickenWorldX + lookAheadDistance;
         x += manholeSpacing
       ) {
-        // Place manholes on all 5 lanes at this x position
-        for (int lane = 0; lane < 5; lane++) {
-          final lanePosition = lane / 4.0; // 5 lanes: 0, 0.25, 0.5, 0.75, 1.0
+        // Place 4 manholes in the center of each lane between dashed lines
+        // All at the same height as the chicken
+        for (int lane = 1; lane < 5; lane++) {
+          // Skip first lane (lane 0)
+          final lanePosition =
+              (lane * 0.2) + 0.1; // Centers: 0.3, 0.5, 0.7, 0.9
           manholes.add(
             Manhole(
               lane: lanePosition,
               worldX: x,
-              verticalPosition: lanePosition, // Static vertical position
+              verticalPosition:
+                  chickenLane, // All manholes at the same height as chicken
             ),
           );
         }
+      }
+    }
+  }
+
+  // Generate manholes for all lanes when chicken changes lanes
+  void _generateManholesForNewLane() {
+    // Remove old manholes that are too far behind
+    manholes.removeWhere(
+      (manhole) => manhole.worldX < chickenWorldX - 2.0 && !manhole.isActivated,
+    );
+
+    // Generate new manholes in the center of each lane
+    // All at the same height as the chicken
+    for (int i = 1; i <= 5; i++) {
+      // Place 4 manholes in the center of each lane between dashed lines
+      for (int lane = 1; lane < 5; lane++) {
+        // Skip first lane (lane 0)
+        final lanePosition = (lane * 0.2) + 0.1; // Centers: 0.3, 0.5, 0.7, 0.9
+        manholes.add(
+          Manhole(
+            lane: lanePosition,
+            worldX: chickenWorldX + (i * 2.0), // Spaced every 2 units ahead
+            verticalPosition:
+                chickenLane, // All manholes at the same height as chicken
+          ),
+        );
       }
     }
   }
@@ -572,11 +611,11 @@ class ChickenRoadGame {
       }
     }
 
-    // Check for manhole interactions - chicken can activate manholes
+    // Check for manhole interactions - chicken can activate any nearby manhole
     for (int i = manholes.length - 1; i >= 0; i--) {
       final manhole = manholes[i];
       if (!manhole.isActivated &&
-          (manhole.lane - chickenLane).abs() < 0.15 &&
+          (manhole.lane - chickenLane).abs() < 0.3 && // Within reach of chicken
           (manhole.worldX - chickenWorldX).abs() < 0.3) {
         // Activate manhole transformation
         manhole.startTransformation();
@@ -590,8 +629,9 @@ class ChickenRoadGame {
               position: 1.0,
               value: 2, // Higher value for transformed coin
               worldX: manhole.worldX,
-              verticalPosition:
-                  manhole.lane, // Coin appears at the manhole's lane position
+              verticalPosition: manhole
+                  .verticalPosition, // Coin appears at the manhole's position
+              isFromManhole: true, // Mark this as a coin from manhole
             ),
           );
 
