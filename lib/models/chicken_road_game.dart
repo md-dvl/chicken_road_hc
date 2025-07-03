@@ -370,9 +370,13 @@ class ChickenRoadGame {
   // Move chicken up (between lanes)
   void moveChickenUp() {
     if (isGameActive && !isPaused && chickenLane > 0.0) {
-      chickenLane -=
-          0.25; // Move to upper lane (5 lanes: 0, 0.25, 0.5, 0.75, 1.0)
-      if (chickenLane < 0.0) chickenLane = 0.0;
+      // Define lane centers: 0.1, 0.3, 0.5, 0.7, 0.9
+      final List<double> laneCenters = [0.1, 0.3, 0.5, 0.7, 0.9];
+      final currentIndex = laneCenters.indexOf(chickenLane);
+      if (currentIndex > 0) {
+        chickenLane =
+            laneCenters[currentIndex - 1]; // Move to upper lane center
+      }
 
       // Reset step counter and generate new manhole line
       currentManholeStep = 0;
@@ -386,9 +390,13 @@ class ChickenRoadGame {
   // Move chicken down (between lanes)
   void moveChickenDown() {
     if (isGameActive && !isPaused && chickenLane < 1.0) {
-      chickenLane +=
-          0.25; // Move to lower lane (5 lanes: 0, 0.25, 0.5, 0.75, 1.0)
-      if (chickenLane > 1.0) chickenLane = 1.0;
+      // Define lane centers: 0.1, 0.3, 0.5, 0.7, 0.9
+      final List<double> laneCenters = [0.1, 0.3, 0.5, 0.7, 0.9];
+      final currentIndex = laneCenters.indexOf(chickenLane);
+      if (currentIndex >= 0 && currentIndex < laneCenters.length - 1) {
+        chickenLane =
+            laneCenters[currentIndex + 1]; // Move to lower lane center
+      }
 
       // Reset step counter and generate new manhole line
       currentManholeStep = 0;
@@ -473,8 +481,13 @@ class ChickenRoadGame {
     // Generate cars (obstacles) that move vertically down the lanes
     if (math.Random().nextDouble() <
         0.05 * difficultySettings[selectedDifficulty]!['obstacleFrequency']) {
-      final lane =
-          math.Random().nextInt(5) / 4; // 5 lanes (0, 0.25, 0.5, 0.75, 1.0)
+      // Define lane centers between dashed lines
+      // Road is divided into 5 lanes: 0-0.2, 0.2-0.4, 0.4-0.6, 0.6-0.8, 0.8-1.0
+      // Centers are at: 0.1, 0.3, 0.5, 0.7, 0.9
+      final List<double> laneCenters = [0.1, 0.3, 0.5, 0.7, 0.9];
+      final laneIndex = math.Random().nextInt(laneCenters.length);
+      final lane = laneCenters[laneIndex]; // Choose random lane center
+
       final type = math.Random().nextInt(4); // 4 types of cars (car1-4.png)
       obstacles.add(
         Obstacle(
