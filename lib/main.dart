@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'screens/chicken_road_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   runApp(const ChickenRoadApp());
@@ -17,7 +17,7 @@ class ChickenRoadApp extends StatelessWidget {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Color(0xFF1A1A2E),
       ),
-      home: const ChickenRoadScreen(),
+      home: const MainScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
