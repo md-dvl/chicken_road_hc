@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../models/game_settings.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,11 +19,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   static const Color accentOrange = Color(0xFFFF6B35);
   static const Color accentBlue = Color(0xFF2ECC71);
 
-  // Settings state
-  bool soundEnabled = true;
-  bool vibrationEnabled = true;
-  bool notificationsEnabled = false;
-  double volume = 0.5;
+  // Settings instance
+  final GameSettings _settings = GameSettings();
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       child: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
@@ -62,15 +60,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsSection('AUDIO', [
                 _buildSwitchSetting(
                   'Sound Effects',
-                  soundEnabled,
+                  _settings.soundEnabled,
                   CupertinoIcons.volume_up,
-                  (value) => setState(() => soundEnabled = value),
+                  (value) => setState(() => _settings.soundEnabled = value),
+                ),
+                _buildSwitchSetting(
+                  'Background Music',
+                  _settings.musicEnabled,
+                  CupertinoIcons.music_note,
+                  (value) => setState(() => _settings.musicEnabled = value),
                 ),
                 _buildSliderSetting(
-                  'Volume',
-                  volume,
-                  CupertinoIcons.speaker_1,
-                  (value) => setState(() => volume = value),
+                  'Master Volume',
+                  _settings.masterVolume,
+                  CupertinoIcons.speaker_3,
+                  (value) => setState(() => _settings.masterVolume = value),
                 ),
               ]),
 
@@ -80,15 +84,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsSection('GAMEPLAY', [
                 _buildSwitchSetting(
                   'Vibration',
-                  vibrationEnabled,
+                  _settings.vibrationEnabled,
                   CupertinoIcons.device_phone_portrait,
-                  (value) => setState(() => vibrationEnabled = value),
+                  (value) => setState(() => _settings.vibrationEnabled = value),
                 ),
                 _buildSwitchSetting(
-                  'Notifications',
-                  notificationsEnabled,
+                  'Show Animations',
+                  _settings.showAnimations,
+                  CupertinoIcons.sparkles,
+                  (value) => setState(() => _settings.showAnimations = value),
+                ),
+                _buildSwitchSetting(
+                  'Auto Collect Coins',
+                  _settings.autoCollectCoins,
+                  CupertinoIcons.money_dollar_circle,
+                  (value) => setState(() => _settings.autoCollectCoins = value),
+                ),
+                _buildSelectionSetting(
+                  'Default Difficulty',
+                  _settings.defaultDifficulty,
+                  CupertinoIcons.flame,
+                  ['Easy', 'Medium', 'Hard'],
+                  (value) =>
+                      setState(() => _settings.defaultDifficulty = value),
+                ),
+                _buildSelectionSetting(
+                  'Default Bet',
+                  '\$${_settings.defaultBet}',
+                  CupertinoIcons.money_dollar,
+                  ['\$1', '\$2', '\$5'],
+                  (value) => setState(
+                    () => _settings.defaultBet = int.parse(value.substring(1)),
+                  ),
+                ),
+              ]),
+
+              const SizedBox(height: 30),
+
+              // Display Settings
+              _buildSettingsSection('DISPLAY', [
+                _buildSwitchSetting(
+                  'Reduced Motion',
+                  _settings.reducedMotion,
+                  CupertinoIcons.eye_slash,
+                  (value) => setState(() => _settings.reducedMotion = value),
+                ),
+                _buildSliderSetting(
+                  'UI Scale',
+                  _settings.uiScale,
+                  CupertinoIcons.textformat_size,
+                  (value) => setState(() => _settings.uiScale = value),
+                  min: 0.5,
+                  max: 2.0,
+                  showPercentage: false,
+                ),
+              ]),
+
+              const SizedBox(height: 30),
+
+              // Notifications Settings
+              _buildSettingsSection('NOTIFICATIONS', [
+                _buildSwitchSetting(
+                  'Push Notifications',
+                  _settings.notificationsEnabled,
                   CupertinoIcons.bell,
-                  (value) => setState(() => notificationsEnabled = value),
+                  (value) =>
+                      setState(() => _settings.notificationsEnabled = value),
                 ),
               ]),
 
@@ -97,36 +158,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // About Section
               _buildSettingsSection('ABOUT', [
                 _buildInfoSetting('Version', '1.0.0', CupertinoIcons.info),
-                _buildInfoSetting(
-                  'Developer',
-                  'Game Studio',
-                  CupertinoIcons.person,
-                ),
+                _buildPrivacyPolicySetting(),
               ]),
-
-              const Spacer(),
-
-              // Placeholder message
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: panelGrey.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: goldColor.withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: const Text(
-                  'Settings functionality will be implemented soon!\nCustomize your gaming experience here.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: whiteText,
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
 
               const SizedBox(height: 20),
             ],
@@ -218,8 +251,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String title,
     double value,
     IconData icon,
-    Function(double) onChanged,
-  ) {
+    Function(double) onChanged, {
+    double min = 0.0,
+    double max = 1.0,
+    bool showPercentage = true,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -242,7 +278,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const Spacer(),
               Text(
-                '${(value * 100).round()}%',
+                showPercentage
+                    ? '${(value * 100).round()}%'
+                    : '${value.toStringAsFixed(1)}x',
                 style: const TextStyle(
                   color: goldColor,
                   fontSize: 14,
@@ -254,6 +292,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           CupertinoSlider(
             value: value,
+            min: min,
+            max: max,
             onChanged: onChanged,
             activeColor: goldColor,
             thumbColor: goldColor,
@@ -290,6 +330,176 @@ class _SettingsScreenState extends State<SettingsScreen> {
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectionSetting(
+    String title,
+    String currentValue,
+    IconData icon,
+    List<String> options,
+    Function(String) onChanged,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: accentBlue,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: whiteText, size: 16),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(color: whiteText, fontSize: 14),
+            ),
+          ),
+          CupertinoButton(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            color: panelGrey,
+            borderRadius: BorderRadius.circular(8),
+            onPressed: () =>
+                _showSelectionDialog(title, currentValue, options, onChanged),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  currentValue,
+                  style: const TextStyle(
+                    color: goldColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  CupertinoIcons.chevron_down,
+                  color: goldColor,
+                  size: 12,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrivacyPolicySetting() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: () => _showPrivacyDialog(),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accentBlue,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                CupertinoIcons.shield,
+                color: whiteText,
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Privacy Policy',
+                    style: TextStyle(color: whiteText, fontSize: 14),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'We don\'t collect or send any personal data',
+                    style: TextStyle(
+                      color: whiteText.withOpacity(0.7),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              CupertinoIcons.chevron_right,
+              color: goldColor,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSelectionDialog(
+    String title,
+    String currentValue,
+    List<String> options,
+    Function(String) onChanged,
+  ) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) => CupertinoActionSheet(
+        title: Text(
+          'Select $title',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        actions: options.map((option) {
+          return CupertinoActionSheetAction(
+            isDefaultAction: option == currentValue,
+            onPressed: () {
+              onChanged(option);
+              Navigator.pop(context);
+            },
+            child: Text(
+              option,
+              style: TextStyle(
+                color: option == currentValue
+                    ? goldColor
+                    : CupertinoColors.systemBlue,
+                fontWeight: option == currentValue
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+            ),
+          );
+        }).toList(),
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+      ),
+    );
+  }
+
+  void _showPrivacyDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Privacy Policy'),
+        content: const Text(
+          'Chicken Road Ultimate respects your privacy.\n\n'
+          'We do not collect, store, or transmit any personal data.\n\n'
+          'All game data is stored locally on your device and never sent to external servers.\n\n'
+          'Your privacy is important to us and we are committed to protecting it.',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Got it!'),
+            onPressed: () => Navigator.pop(context),
           ),
         ],
       ),
