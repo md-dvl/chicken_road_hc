@@ -18,9 +18,6 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
   static const Color greyMultiplier = Color(0xFF0F3460);
   static const Color whiteText = Color(0xFFFFFFFF);
   static const Color accentOrange = Color(0xFFFF6B35);
-  static const Color accentBlue = Color(0xFF2ECC71);
-  static const Color accentPurple = Color(0xFF9B59B6);
-  static const Color greenButton = Color(0xFF00FF87);
   static const Color redColor = Color(0xFFFF4757);
 
   // Mock data for demonstration
@@ -165,57 +162,59 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
   ];
 
   // Calculated stats from mock data
-  int get _bestScore => _mockGames.map((g) => g['score'] as int).reduce((a, b) => a > b ? a : b);
+  int get _bestScore =>
+      _mockGames.map((g) => g['score'] as int).reduce((a, b) => a > b ? a : b);
   int get _totalGames => _mockGames.length;
-  double get _totalEarnings => _mockGames.fold(0.0, (sum, g) => sum + (g['earnings'] as double));
-  double get _bestMultiplier => _mockGames.map((g) => g['maxMultiplier'] as double).reduce((a, b) => a > b ? a : b);
-  int get _successfulCashouts => _mockGames.where((g) => g['cashedOut'] as bool).length;
-  int get _unlockedAchievements => _achievements.where((a) => a['unlocked'] as bool).length;
+  double get _totalEarnings =>
+      _mockGames.fold(0.0, (sum, g) => sum + (g['earnings'] as double));
+  double get _bestMultiplier => _mockGames
+      .map((g) => g['maxMultiplier'] as double)
+      .reduce((a, b) => a > b ? a : b);
+  int get _successfulCashouts =>
+      _mockGames.where((g) => g['cashedOut'] as bool).length;
+  int get _unlockedAchievements =>
+      _achievements.where((a) => a['unlocked'] as bool).length;
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: darkBackground,
-      child: CustomScrollView(
-        slivers: [
-          CupertinoSliverNavigationBar(
-            backgroundColor: panelGrey,
-            largeTitle: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [goldColor, accentOrange],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: const Text(
-                'SCORE BOARD',
-                style: TextStyle(
-                  color: darkBackground,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                ),
-              ),
+      navigationBar: CupertinoNavigationBar(
+        backgroundColor: panelGrey,
+        middle: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [goldColor, accentOrange],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: const Text(
+            'SCORE BOARD',
+            style: TextStyle(
+              color: darkBackground,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
             ),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _buildStatsOverview(),
-                  const SizedBox(height: 20),
-                  _buildTabSelector(),
-                  const SizedBox(height: 20),
-                  _buildTabContent(),
-                ],
-              ),
-            ),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              _buildStatsOverview(),
+              const SizedBox(height: 20),
+              _buildTabSelector(),
+              const SizedBox(height: 20),
+              Expanded(child: _buildTabContent()),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -230,10 +229,7 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: goldColor.withOpacity(0.3),
-          width: 2,
-        ),
+        border: Border.all(color: goldColor.withOpacity(0.3), width: 2),
         boxShadow: [
           BoxShadow(
             color: goldColor.withOpacity(0.1),
@@ -245,20 +241,44 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatItem('Best Score', _bestScore.toString(), CupertinoIcons.star_fill),
-              _buildStatItem('Total Games', _totalGames.toString(), CupertinoIcons.game_controller),
-              _buildStatItem('Achievements', '$_unlockedAchievements/${_achievements.length}', CupertinoIcons.rosette),
+              _buildStatItem(
+                'Best Score',
+                _bestScore.toString(),
+                CupertinoIcons.star_fill,
+              ),
+              _buildStatItem(
+                'Total Games',
+                _totalGames.toString(),
+                CupertinoIcons.game_controller,
+              ),
+              _buildStatItem(
+                'Achievements',
+                '$_unlockedAchievements/${_achievements.length}',
+                CupertinoIcons.rosette,
+              ),
             ],
           ),
           const SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatItem('Best Multiplier', '${_bestMultiplier.toStringAsFixed(1)}x', CupertinoIcons.chart_bar_alt_fill),
-              _buildStatItem('Total Earnings', '\$${_totalEarnings.toStringAsFixed(2)}', CupertinoIcons.money_dollar),
-              _buildStatItem('Cash Outs', _successfulCashouts.toString(), CupertinoIcons.checkmark_circle_fill),
+              _buildStatItem(
+                'Best Multiplier',
+                '${_bestMultiplier.toStringAsFixed(1)}x',
+                CupertinoIcons.chart_bar_alt_fill,
+              ),
+              _buildStatItem(
+                'Total Earnings',
+                '\$${_totalEarnings.toStringAsFixed(2)}',
+                CupertinoIcons.money_dollar,
+              ),
+              _buildStatItem(
+                'Cash Outs',
+                _successfulCashouts.toString(),
+                CupertinoIcons.checkmark_circle_fill,
+              ),
             ],
           ),
         ],
@@ -267,39 +287,37 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
   }
 
   Widget _buildStatItem(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: goldColor,
-            shape: BoxShape.circle,
+    return SizedBox(
+      width: 100,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: goldColor, shape: BoxShape.circle),
+            child: Icon(icon, color: darkBackground, size: 20),
           ),
-          child: Icon(
-            icon,
-            color: darkBackground,
-            size: 20,
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: whiteText,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            color: whiteText,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+          const SizedBox(height: 4),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: goldColor,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: goldColor,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -348,121 +366,116 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
   }
 
   Widget _buildRecentGames() {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 400),
-      child: ListView.builder(
-        itemCount: _mockGames.length,
-        itemBuilder: (context, index) {
-          final game = _mockGames[index];
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [panelGrey.withOpacity(0.8), greyMultiplier.withOpacity(0.8)],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: game['cashedOut'] ? goldColor.withOpacity(0.5) : redColor.withOpacity(0.3),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: game['cashedOut'] ? goldColor : redColor,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            game['cashedOut'] ? CupertinoIcons.checkmark : CupertinoIcons.xmark,
-                            color: darkBackground,
-                            size: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          game['cashedOut'] ? 'CASHED OUT' : 'CRASHED',
-                          style: TextStyle(
-                            color: game['cashedOut'] ? goldColor : redColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      '${game['date'].day}/${game['date'].month} ${game['date'].hour}:${game['date'].minute.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        color: whiteText,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildGameStatItem('Score', game['score'].toString()),
-                    _buildGameStatItem('Bet', '\$${game['bet']}'),
-                    _buildGameStatItem('Max Multiplier', '${game['maxMultiplier'].toStringAsFixed(1)}x'),
-                    _buildGameStatItem('Earnings', '\$${game['earnings'].toStringAsFixed(2)}'),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Difficulty: ${game['difficulty']}',
-                      style: const TextStyle(
-                        color: whiteText,
-                        fontSize: 11,
-                      ),
-                    ),
-                    Text(
-                      'Steps: ${game['stepsCompleted']}',
-                      style: const TextStyle(
-                        color: whiteText,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
+    return ListView.builder(
+      itemCount: _mockGames.length,
+      itemBuilder: (context, index) {
+        final game = _mockGames[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                panelGrey.withOpacity(0.8),
+                greyMultiplier.withOpacity(0.8),
               ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
             ),
-          );
-        },
-      ),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: game['cashedOut']
+                  ? goldColor.withOpacity(0.5)
+                  : redColor.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: game['cashedOut'] ? goldColor : redColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          game['cashedOut']
+                              ? CupertinoIcons.checkmark
+                              : CupertinoIcons.xmark,
+                          color: darkBackground,
+                          size: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        game['cashedOut'] ? 'CASHED OUT' : 'CRASHED',
+                        style: TextStyle(
+                          color: game['cashedOut'] ? goldColor : redColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '${game['date'].day}/${game['date'].month} ${game['date'].hour}:${game['date'].minute.toString().padLeft(2, '0')}',
+                    style: const TextStyle(color: whiteText, fontSize: 11),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildGameStatItem('Score', game['score'].toString()),
+                  _buildGameStatItem('Bet', '\$${game['bet']}'),
+                  _buildGameStatItem(
+                    'Max Multiplier',
+                    '${game['maxMultiplier'].toStringAsFixed(1)}x',
+                  ),
+                  _buildGameStatItem(
+                    'Earnings',
+                    '\$${game['earnings'].toStringAsFixed(2)}',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Difficulty: ${game['difficulty']}',
+                    style: const TextStyle(color: whiteText, fontSize: 13),
+                  ),
+                  Text(
+                    'Steps: ${game['stepsCompleted']}',
+                    style: const TextStyle(color: whiteText, fontSize: 13),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildGameStatItem(String label, String value) {
     return Column(
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: whiteText,
-            fontSize: 10,
-          ),
-        ),
+        Text(label, style: const TextStyle(color: whiteText, fontSize: 11)),
         const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
             color: goldColor,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -471,76 +484,80 @@ class _ScoreBoardScreenState extends State<ScoreBoardScreen> {
   }
 
   Widget _buildAchievements() {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 400),
-      child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.2,
-        ),
-        itemCount: _achievements.length,
-        itemBuilder: (context, index) {
-          final achievement = _achievements[index];
-          return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: achievement['unlocked']
-                    ? [goldColor.withOpacity(0.2), accentOrange.withOpacity(0.2)]
-                    : [panelGrey.withOpacity(0.5), greyMultiplier.withOpacity(0.5)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: achievement['unlocked'] ? goldColor.withOpacity(0.5) : whiteText.withOpacity(0.2),
-                width: 1,
-              ),
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.2,
+      ),
+      itemCount: _achievements.length,
+      itemBuilder: (context, index) {
+        final achievement = _achievements[index];
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: achievement['unlocked']
+                  ? [goldColor.withOpacity(0.2), accentOrange.withOpacity(0.2)]
+                  : [
+                      panelGrey.withOpacity(0.5),
+                      greyMultiplier.withOpacity(0.5),
+                    ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  achievement['icon'],
-                  style: const TextStyle(fontSize: 32),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: achievement['unlocked']
+                  ? goldColor.withOpacity(0.5)
+                  : whiteText.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(achievement['icon'], style: const TextStyle(fontSize: 32)),
+              const SizedBox(height: 8),
+              Text(
+                achievement['title'],
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: achievement['unlocked']
+                      ? goldColor
+                      : whiteText.withOpacity(0.5),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  achievement['title'],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: achievement['unlocked'] ? goldColor : whiteText.withOpacity(0.5),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                achievement['description'],
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: achievement['unlocked']
+                      ? whiteText
+                      : whiteText.withOpacity(0.5),
+                  fontSize: 12,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  achievement['description'],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: achievement['unlocked'] ? whiteText : whiteText.withOpacity(0.5),
-                    fontSize: 10,
-                  ),
-                ),
-                if (achievement['unlocked'] && achievement['unlockedDate'] != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'Unlocked: ${achievement['unlockedDate'].day}/${achievement['unlockedDate'].month}',
-                      style: TextStyle(
-                        color: goldColor.withOpacity(0.7),
-                        fontSize: 9,
-                      ),
+              ),
+              if (achievement['unlocked'] &&
+                  achievement['unlockedDate'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Unlocked: ${achievement['unlockedDate'].day}/${achievement['unlockedDate'].month}',
+                    style: TextStyle(
+                      color: goldColor.withOpacity(0.7),
+                      fontSize: 9,
                     ),
                   ),
-              ],
-            ),
-          );
-        },
-      ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
