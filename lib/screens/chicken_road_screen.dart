@@ -188,11 +188,11 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(color: darkBackground),
       child: Center(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [goldColor, accentOrange],
@@ -212,9 +212,9 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             'CHICKEN ROAD ULTIMATE',
             style: TextStyle(
               color: darkBackground,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
+              letterSpacing: 1.0,
             ),
           ),
         ),
@@ -336,11 +336,6 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             const Text(
               'PAUSED',
               style: TextStyle(color: goldColor, fontSize: 14),
-            ),
-          if (game.isGameOver)
-            const Text(
-              'GAME OVER',
-              style: TextStyle(color: redColor, fontSize: 14),
             ),
         ],
       ),
@@ -676,6 +671,36 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
             ],
           ),
           const SizedBox(height: 12),
+          // Game Over message
+          if (game.isGameOver)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [redColor.withOpacity(0.8), redColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: redColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: const Text(
+                'GAME OVER',
+                style: TextStyle(
+                  color: whiteText,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ),
           // How to play button
           Center(
             child: Container(
