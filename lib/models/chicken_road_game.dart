@@ -126,6 +126,7 @@ class ChickenRoadGame {
   int selectedBet = 2;
   String selectedDifficulty = 'Medium';
   double cashOutAmount = 0.0;
+  double cashOutAmountForAnimation = 0.0; // Value to show in animation
   double balance = 999.96;
   int coinsCounted = 0;
   int score = 0;
@@ -240,6 +241,7 @@ class ChickenRoadGame {
     currentLevel = 1;
     currentMultiplier = 0.0; // Start with 0 instead of 1.0
     cashOutAmount = 0.0; // Start with 0 gold
+    cashOutAmountForAnimation = 0.0; // Reset animation value
     gameSpeed = difficultySettings[selectedDifficulty]!['gameSpeed'];
     chickenLives = difficultySettings[selectedDifficulty]!['lives'];
     obstacles.clear();
@@ -425,6 +427,7 @@ class ChickenRoadGame {
   void cashOut() {
     if (isGameActive) {
       balance += cashOutAmount;
+      cashOutAmountForAnimation = cashOutAmount; // Save for animation
       showCashOutAnimation = true;
       isGameActive = false;
       isGameOver = true; // End the game completely
@@ -436,6 +439,7 @@ class ChickenRoadGame {
       // Hide cash out animation after a delay
       Timer(const Duration(milliseconds: 800), () {
         showCashOutAnimation = false;
+        cashOutAmountForAnimation = 0.0; // Reset animation value
         _notifyStateChanged();
       });
     }
@@ -447,6 +451,7 @@ class ChickenRoadGame {
     if (!isGameActive) {
       // When not playing, cash out amount should be 0, not the bet amount
       cashOutAmount = 0.0;
+      cashOutAmountForAnimation = 0.0; // Reset animation value
     }
     _notifyStateChanged();
   }

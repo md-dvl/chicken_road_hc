@@ -915,7 +915,7 @@ class _ChickenRoadScreenState extends State<ChickenRoadScreen>
           ],
         ),
         child: Text(
-          '\$${game.cashOutAmount.toStringAsFixed(2)}',
+          '\$${game.cashOutAmountForAnimation.toStringAsFixed(2)}',
           style: const TextStyle(
             color: Colors.black,
             fontSize: 48,
